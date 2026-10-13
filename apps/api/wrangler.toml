@@ -1,0 +1,35 @@
+name = "future-chatbot-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# 1. Cloudflare D1 데이터베이스 바인딩
+[[d1_databases]]
+binding = "DB"
+database_name = "future-chatbot-d1"
+database_id = "placeholder-d1-id"
+migrations_dir = "../../migrations"
+
+# 2. Cloudflare R2 PDF 저장소 버킷 바인딩
+[[r2_buckets]]
+binding = "DOCS_BUCKET"
+bucket_name = "future-chatbot-docs"
+
+# 3. Cloudflare Workers AI 바인딩
+[ai]
+binding = "AI"
+
+# 4. 환경 변수 기본값
+[vars]
+ENVIRONMENT = "production"
+ALLOWED_ORIGIN = "https://futureschool.allforedu.kr"
+CF_ACCESS_TEAM_NAME = "futureschool"
+CF_ACCESS_AUD = ""
+AI_MODEL_NAME = "@cf/meta/llama-3.1-8b-instruct"
+
+# 로컬 개발 환경 오버라이드
+[env.development.vars]
+ENVIRONMENT = "development"
+ALLOWED_ORIGIN = "*"
+CF_ACCESS_TEAM_NAME = "dev"
+CF_ACCESS_AUD = "dev-aud"

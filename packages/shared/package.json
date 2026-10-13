@@ -1,0 +1,15 @@
+{
+  "name": "@create-chatbot/shared",
+  "version": "1.0.0",
+  "description": "Shared types and utilities for CREATE AI 수업 도우미",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}

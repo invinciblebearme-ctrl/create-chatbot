@@ -1,0 +1,30 @@
+{
+  "name": "future-chatbot-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CREATE AI 수업 도우미 - 초등학교 연구학교 CREATE 교수·학습 모형 하이브리드 AI 챗봇",
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/web",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "build": "npm run build --workspaces",
+    "build:web": "npm run build --workspace=apps/web",
+    "build:api": "npm run build --workspace=apps/api",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "keywords": [
+    "create-model",
+    "education-ai",
+    "cloudflare-workers",
+    "cloudflare-pages",
+    "react",
+    "d1",
+    "r2"
+  ],
+  "author": "CREATE Research School Team",
+  "license": "MIT"
+}
