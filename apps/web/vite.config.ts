@@ -16,7 +16,17 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:8787',
-        changeOrigin: true
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (_err, _req, res: any) => {
+            if (res && !res.headersSent && typeof res.writeHead === 'function') {
+              res.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8' });
+              res.end(JSON.stringify({
+                error: '백엔드 API 서버(포트 8787)에 연결할 수 없습니다. npm run dev:api를 실행해 주세요.'
+              }));
+            }
+          });
+        }
       }
     }
   },

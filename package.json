@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "npm run dev --workspace=apps/web",
     "dev:api": "npm run dev --workspace=apps/api",
+    "dev:all": "start-dev.bat",
+    "start": "start-dev.bat",
     "build": "npm run build --workspaces",
     "build:web": "npm run build --workspace=apps/web",
     "build:api": "npm run build --workspace=apps/api",
