@@ -87,39 +87,50 @@ ${sanitizePromptContext(userQuery)}
 
 위 참고자료만을 토대로 교사의 질문에 답변해 주세요.`;
 
-  // 4. Workers AI 호출 시도
+  // 4. Workers AI 호출 시도 (최신 지원 모델 순차 시도)
+  const candidateModels = [
+    env.AI_MODEL_NAME,
+    '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+    '@cf/meta/llama-3.2-3b-instruct',
+    '@cf/meta/llama-3-8b-instruct',
+    '@cf/qwen/qwen2.5-7b-instruct'
+  ].filter(Boolean) as string[];
+
   if (env.AI && typeof env.AI.run === 'function') {
-    try {
-      const aiResponse: any = await env.AI.run(model, {
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        max_tokens: AI_QUOTA_POLICY.MAX_OUTPUT_TOKENS,
-        temperature: 0.1 // 일관성과 사실 기반성 강화를 위해 낮은 온도 설정
-      });
+    for (const targetModel of candidateModels) {
+      try {
+        console.log(`[Workers AI] Invoking model: ${targetModel}`);
+        const aiResponse: any = await env.AI.run(targetModel, {
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          max_tokens: AI_QUOTA_POLICY.MAX_OUTPUT_TOKENS,
+          temperature: 0.1
+        });
 
-      let responseText = '';
-      if (typeof aiResponse === 'string') {
-        responseText = aiResponse;
-      } else if (aiResponse?.response) {
-        responseText = aiResponse.response;
-      } else if (aiResponse?.choices?.[0]?.message?.content) {
-        responseText = aiResponse.choices[0].message.content;
-      }
+        let responseText = '';
+        if (typeof aiResponse === 'string') {
+          responseText = aiResponse;
+        } else if (aiResponse?.response) {
+          responseText = aiResponse.response;
+        } else if (aiResponse?.choices?.[0]?.message?.content) {
+          responseText = aiResponse.choices[0].message.content;
+        }
 
-      if (responseText && responseText.trim()) {
-        const cleanAnswer = responseText.trim();
-        // 캐시 저장
-        aiResponseCache.set(cacheKey, { answer: cleanAnswer, timestamp: Date.now() });
-        return {
-          answer: cleanAnswer,
-          isFallback: false,
-          modelUsed: model
-        };
+        if (responseText && responseText.trim()) {
+          const cleanAnswer = responseText.trim();
+          // 캐시 저장
+          aiResponseCache.set(cacheKey, { answer: cleanAnswer, timestamp: Date.now() });
+          return {
+            answer: cleanAnswer,
+            isFallback: false,
+            modelUsed: targetModel
+          };
+        }
+      } catch (aiError: any) {
+        console.warn(`[Workers AI] Model ${targetModel} invocation failed:`, aiError?.message || aiError);
       }
-    } catch (aiError) {
-      console.warn('Primary Workers AI invocation failed, trying fallback or search mode:', aiError);
     }
   }
 
