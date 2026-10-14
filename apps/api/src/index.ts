@@ -63,23 +63,50 @@ export default {
     try {
       // 2. 정적 에셋 서빙 (Workers Static Assets 환경에서 SPA 프런트엔드 제공)
       if (!pathname.startsWith('/api/') && env.ASSETS) {
+        // (1) 루트 / 또는 /chatbot 접속 시 표준 경로 /chatbot/ 으로 302 리디렉션
+        if (pathname === '/' || pathname === '') {
+          return Response.redirect(new URL('/chatbot/', request.url).toString(), 302);
+        }
+        if (pathname === '/chatbot') {
+          return Response.redirect(new URL('/chatbot/', request.url).toString(), 302);
+        }
+
+        // (2) /chatbot/assets/... -> /assets/... 실제 빌드 파일 맵핑
         if (pathname.startsWith('/chatbot/assets/')) {
           const assetUrl = new URL(request.url);
           assetUrl.pathname = pathname.replace('/chatbot/assets/', '/assets/');
           return await env.ASSETS.fetch(new Request(assetUrl.toString(), request));
         }
+
+        // (3) /chatbot/favicon.svg -> /favicon.svg 맵핑
         if (pathname === '/chatbot/favicon.svg') {
           const iconUrl = new URL(request.url);
           iconUrl.pathname = '/favicon.svg';
           return await env.ASSETS.fetch(new Request(iconUrl.toString(), request));
         }
-        const assetRes = await env.ASSETS.fetch(request);
-        if (assetRes.status === 404 || !pathname.includes('.')) {
-          const indexUrl = new URL(request.url);
-          indexUrl.pathname = '/index.html';
-          return await env.ASSETS.fetch(new Request(indexUrl.toString(), request));
+
+        // (4) SPA 프런트엔드 페이지 (/chatbot/, /chatbot/admin 등)
+        if (pathname.startsWith('/chatbot/')) {
+          const rootUrl = new URL('/', request.url);
+          const indexRes = await env.ASSETS.fetch(new Request(rootUrl.toString(), request));
+          // HTML 응답은 200 OK로 직접 반환하여 무한 리디렉션 원천 차단
+          return new Response(indexRes.body, {
+            status: 200,
+            headers: {
+              'Content-Type': 'text/html; charset=utf-8',
+              'Cache-Control': 'no-cache'
+            }
+          });
         }
-        return assetRes;
+
+        // (5) 기타 정적 에셋 직접 조회 시도
+        const directRes = await env.ASSETS.fetch(request);
+        if (directRes.status < 400) {
+          return directRes;
+        }
+
+        // (6) 그 외 알 수 없는 경로는 /chatbot/ 으로 리디렉션
+        return Response.redirect(new URL('/chatbot/', request.url).toString(), 302);
       }
 
       // 3. 라우팅 매칭
