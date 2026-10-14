@@ -68,4 +68,22 @@ describe('Cloudflare Access Auth Tests', () => {
     const result = await verifyCloudflareAccess(req, mockEnv);
     expect(result).toBeNull();
   });
+
+  it('올바른 관리자 PIN(7703) 헤더 입력 시 인증 성공', async () => {
+    const req = new Request('https://api.test/api/chatbot/admin/documents', {
+      headers: { 'x-admin-pin': '7703' }
+    });
+    const result = await verifyCloudflareAccess(req, mockEnv);
+    expect(result).not.toBeNull();
+    expect(result?.authenticated).toBe(true);
+    expect(result?.email).toBe('admin@futureschool.allforedu.kr');
+  });
+
+  it('잘못된 관리자 PIN 헤더 입력 시 인증 실패', async () => {
+    const req = new Request('https://api.test/api/chatbot/admin/documents', {
+      headers: { 'x-admin-pin': '0000' }
+    });
+    const result = await verifyCloudflareAccess(req, mockEnv);
+    expect(result).toBeNull();
+  });
 });

@@ -162,12 +162,19 @@ export interface ChatResponse {
   };
 }
 
+export interface AiModelUsage {
+  model: string;
+  request_count: number;
+}
+
 export interface AdminStats {
   total_documents: number;
   public_documents: number;
   indexed_documents: number;
   failed_documents: number;
   ai_requests_today: number;
+  ai_limit_daily?: number;
+  ai_model_usage?: AiModelUsage[];
   search_requests_today: number;
   recent_documents: Document[];
   recent_errors: string[];

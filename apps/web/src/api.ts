@@ -74,10 +74,16 @@ export async function fetchPublicDocuments(filter?: SearchFilter): Promise<Docum
 // --- 관리자 API ---
 
 function getAdminHeaders(): HeadersInit {
-  const headers: HeadersInit = {
+  const pin = sessionStorage.getItem('admin_pin') || '';
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json'
   };
-  // 로컬 개발 환경용 바이패스 헤더 지원
+
+  if (pin) {
+    headers['x-admin-pin'] = pin;
+  }
+
+  // 로컬 개발 환경용 바이패스 및 CF Access 토큰 지원
   const devToken = localStorage.getItem('cf_access_dev_token');
   if (devToken) {
     headers['Authorization'] = `Bearer ${devToken}`;
@@ -95,7 +101,7 @@ export async function adminFetchDocuments(): Promise<Document[]> {
   });
 
   if (res.status === 401) {
-    throw new Error('관리자 인증이 필요합니다. Cloudflare Access 로그인이 필요합니다.');
+    throw new Error('관리자 인증이 필요합니다. 비밀번호(7703)를 확인해 주세요.');
   }
   if (!res.ok) {
     throw new Error(`관리자 문서 조회 실패 (${res.status})`);
@@ -106,7 +112,13 @@ export async function adminFetchDocuments(): Promise<Document[]> {
 }
 
 export async function adminUploadDocument(formData: FormData): Promise<any> {
-  const headers: HeadersInit = {};
+  const pin = sessionStorage.getItem('admin_pin') || '';
+  const headers: Record<string, string> = {};
+
+  if (pin) {
+    headers['x-admin-pin'] = pin;
+  }
+
   const devToken = localStorage.getItem('cf_access_dev_token');
   if (devToken) {
     headers['Authorization'] = `Bearer ${devToken}`;

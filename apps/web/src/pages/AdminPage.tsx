@@ -30,7 +30,14 @@ import {
   Eye,
   Sliders,
   Database,
-  Cpu
+  Cpu,
+  Lock,
+  KeyRound,
+  LogOut,
+  Sparkles,
+  Clock,
+  BarChart3,
+  AlertCircle
 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PdfViewerModal } from '../components/PdfViewerModal';
@@ -39,6 +46,12 @@ import { PdfViewerModal } from '../components/PdfViewerModal';
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 export const AdminPage: React.FC = () => {
+  // 관리자 비밀번호 PIN 인증 상태 (기본값: 7703)
+  const [adminPin, setAdminPin] = useState<string>(() => sessionStorage.getItem('admin_pin') || '');
+  const [inputPin, setInputPin] = useState('');
+  const [pinError, setPinError] = useState('');
+  const isUnlocked = adminPin === '7703';
+
   const [activeTab, setActiveTab] = useState<'upload' | 'documents' | 'test'>('upload');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -95,8 +108,29 @@ export const AdminPage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isUnlocked) {
+      loadData();
+    }
+  }, [isUnlocked]);
+
+  const handlePinSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (inputPin.trim() === '7703') {
+      sessionStorage.setItem('admin_pin', '7703');
+      setAdminPin('7703');
+      setPinError('');
+    } else {
+      setPinError('비밀번호가 일치하지 않습니다. (비밀번호: 7703)');
+      setInputPin('');
+    }
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('admin_pin');
+    setAdminPin('');
+    setInputPin('');
+    setPinError('');
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -290,6 +324,76 @@ export const AdminPage: React.FC = () => {
     }
   };
 
+  // 관리자 비밀번호 미인증 시 잠금 화면 렌더링
+  if (!isUnlocked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 flex flex-col items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-slate-200/60 p-6 sm:p-8 text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-16 h-16 rounded-2xl bg-brand-50 border border-brand-200 flex items-center justify-center mx-auto mb-4 text-brand-600 shadow-inner">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+            CREATE 관리자 보안 인증
+          </h2>
+          <p className="text-xs text-slate-500 mt-1.5 mb-6 leading-relaxed">
+            연구학교 자료 등록, D1 색인 및 AI 사용량 모니터링을 위해 관리자 비밀번호를 입력해 주세요.
+          </p>
+
+          <form onSubmit={handlePinSubmit} className="space-y-4">
+            <div>
+              <input
+                type="password"
+                maxLength={8}
+                value={inputPin}
+                onChange={e => {
+                  setInputPin(e.target.value);
+                  if (pinError) setPinError('');
+                }}
+                autoFocus
+                placeholder="비밀번호 입력"
+                className="w-full text-center text-2xl tracking-[0.35em] font-mono py-3 px-4 rounded-xl border-2 border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-100 outline-none transition-all placeholder:text-slate-300 placeholder:tracking-normal placeholder:font-sans placeholder:text-sm"
+              />
+            </div>
+
+            {pinError && (
+              <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-center gap-1.5 font-medium">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{pinError}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-semibold text-sm shadow-md shadow-brand-500/20 transition-all flex items-center justify-center gap-2"
+            >
+              <KeyRound className="w-4 h-4" />
+              <span>관리자 대시보드 입장</span>
+            </button>
+          </form>
+
+          <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1 text-slate-600 hover:text-brand-600 font-medium transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              챗봇 홈으로 이동
+            </Link>
+            <span className="text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full font-mono">
+              비밀번호: 7703
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const aiToday = stats?.ai_requests_today ?? 0;
+  const aiLimit = stats?.ai_limit_daily ?? 250;
+  const aiRemaining = Math.max(0, aiLimit - aiToday);
+  const aiUsagePercent = Math.min(100, (aiToday / aiLimit) * 100);
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* 관리자 탑 헤더 */}
@@ -308,10 +412,10 @@ export const AdminPage: React.FC = () => {
                 <span className="font-bold text-base tracking-tight">CREATE 관리자 대시보드</span>
                 <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">
                   <ShieldCheck className="w-3 h-3" />
-                  Cloudflare Access 보호
+                  PIN: 7703 인증됨
                 </span>
               </div>
-              <p className="text-xs text-slate-400">PDF 자료 등록, D1 색인 및 검색 품질 관리</p>
+              <p className="text-xs text-slate-400">PDF 자료 등록, D1 색인 및 AI 무료 사용량 모니터링</p>
             </div>
           </div>
 
@@ -325,12 +429,21 @@ export const AdminPage: React.FC = () => {
               <RefreshCw className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">새로고침</span>
             </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="p-2 rounded-lg bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 transition-colors text-xs flex items-center gap-1.5"
+              title="관리자 화면 잠금 (로그아웃)"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">잠금</span>
+            </button>
           </div>
         </div>
       </header>
 
       {/* 대시보드 메트릭 카드 */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 w-full">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 w-full space-y-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between text-slate-500 mb-1">
@@ -362,20 +475,104 @@ export const AdminPage: React.FC = () => {
               <Cpu className="w-4 h-4 text-indigo-600" />
             </div>
             <p className="text-2xl font-bold text-indigo-600">
-              {stats?.ai_requests_today ?? 0}
+              {aiToday}
+              <span className="text-xs font-normal text-slate-400 ml-1">/ {aiLimit}회</span>
             </p>
-            <span className="text-[11px] text-slate-400">무료 보호 한도 (일 250회)</span>
+            <span className="text-[11px] text-slate-400">일일 무료 보호 한도</span>
           </div>
 
           <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-xs font-semibold">처리 실패</span>
-              <AlertTriangle className="w-4 h-4 text-rose-500" />
+              <span className="text-xs font-semibold">남은 무료 쿼터</span>
+              <Sparkles className="w-4 h-4 text-amber-500" />
             </div>
-            <p className="text-2xl font-bold text-rose-600">
-              {stats?.failed_documents ?? 0}
+            <p className="text-2xl font-bold text-amber-600">
+              {aiRemaining}
+              <span className="text-xs font-normal text-slate-400 ml-1">회</span>
             </p>
-            <span className="text-[11px] text-slate-400">정상 가동</span>
+            <span className="text-[11px] text-emerald-600 font-medium">100% 무료 보장</span>
+          </div>
+        </div>
+
+        {/* Cloudflare Workers AI 무료 사용량 및 쿼터 모니터링 패널 */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 shrink-0">
+                <BarChart3 className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  Cloudflare Workers AI 무료 사용량 및 쿼터 모니터링
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+                    비용: 0원 (무료 티어)
+                  </span>
+                </h4>
+                <p className="text-xs text-slate-500">
+                  매일 250회의 무료 AI 생성 요청이 제공되며, 매일 밤 자정(KST 00:00)에 0회로 자동 초기화됩니다.
+                </p>
+              </div>
+            </div>
+            <div className="text-xs font-semibold text-slate-600 self-start sm:self-center bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 shrink-0">
+              오늘 사용률: <span className="text-indigo-600 font-bold">{aiUsagePercent.toFixed(1)}%</span> ({aiToday}/{aiLimit}회)
+            </div>
+          </div>
+
+          {/* 게이지 바 */}
+          <div className="mt-4">
+            <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-200">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  aiToday > 200
+                    ? 'bg-rose-500'
+                    : aiToday > 150
+                    ? 'bg-amber-500'
+                    : 'bg-indigo-600'
+                }`}
+                style={{
+                  width: `${Math.min(100, Math.max(aiToday > 0 ? 3 : 0, aiUsagePercent))}%`
+                }}
+              />
+            </div>
+            <div className="flex justify-between items-center text-[11px] text-slate-400 mt-1.5 px-0.5">
+              <span>0회 (시작)</span>
+              <span>125회 (50%)</span>
+              <span>250회 (일일 한도)</span>
+            </div>
+          </div>
+
+          {/* 안내 그리드 */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-3 border-t border-slate-100 text-xs">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+              <div className="font-semibold text-slate-700 flex items-center gap-1.5 mb-1">
+                <Cpu className="w-3.5 h-3.5 text-indigo-600" />
+                탑재된 AI 모델
+              </div>
+              <p className="font-mono text-[11px] text-slate-700 truncate" title="@cf/meta/llama-3.3-70b-instruct-fp8-fast">
+                @cf/meta/llama-3.3-70b-instruct-fp8-fast
+              </p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Llama 3.3 70B (공식 한국어 고품질 무료 모델)</p>
+            </div>
+
+            <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200/70">
+              <div className="font-semibold text-emerald-800 flex items-center gap-1.5 mb-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                과금 방지 안전장치
+              </div>
+              <p className="text-[11px] text-emerald-700 leading-snug">
+                250회 한도 도달 시 자동 고속 D1 검색 모드로 전환되어 <strong className="font-bold underline">추가 요금 0원</strong>을 철저히 보장합니다.
+              </p>
+            </div>
+
+            <div className="p-3 rounded-xl bg-indigo-50/60 border border-indigo-200/70">
+              <div className="font-semibold text-indigo-800 flex items-center gap-1.5 mb-1">
+                <Clock className="w-3.5 h-3.5 text-indigo-600" />
+                D1 자료 검색 한도
+              </div>
+              <p className="text-[11px] text-indigo-700 leading-snug">
+                PDF 색인 자료 검색과 원문 조증 확인은 AI 쿼터와 무관하게 <strong className="font-bold">무제한 무료</strong>로 작동합니다.
+              </p>
+            </div>
           </div>
         </div>
 

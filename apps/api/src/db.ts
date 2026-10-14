@@ -376,6 +376,10 @@ export async function getAdminDashboardStats(db: D1Database, todayStr: string): 
     'SELECT SUM(request_count) as total FROM ai_usage WHERE date = ?'
   ).bind(todayStr).first<{ total: number }>();
 
+  const modelUsageResult = await db.prepare(
+    'SELECT model, request_count FROM ai_usage WHERE date = ? ORDER BY request_count DESC'
+  ).bind(todayStr).all();
+
   const recentDocsResult = await db.prepare(
     'SELECT * FROM documents ORDER BY created_at DESC LIMIT 5'
   ).all();
@@ -393,6 +397,11 @@ export async function getAdminDashboardStats(db: D1Database, todayStr: string): 
     indexed_documents: indexed?.count || 0,
     failed_documents: failed?.count || 0,
     ai_requests_today: aiToday?.total || 0,
+    ai_limit_daily: 250,
+    ai_model_usage: (modelUsageResult.results || []).map((r: any) => ({
+      model: r.model as string,
+      request_count: Number(r.request_count || 0)
+    })),
     search_requests_today: 0,
     recent_documents: recentDocs,
     recent_errors: []

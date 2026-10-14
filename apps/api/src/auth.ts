@@ -10,6 +10,8 @@ export interface AdminIdentity {
   authenticated: boolean;
 }
 
+export const ADMIN_PIN = '7703';
+
 /**
  * Base64URL 디코딩 유틸리티
  */
@@ -27,12 +29,25 @@ function base64UrlDecode(str: string): string {
 }
 
 /**
- * Cloudflare Access JWT 파싱 및 서명/만료/대상자 검증
+ * Cloudflare Access JWT 파싱 및 서명/만료/대상자 검증 또는 관리자 PIN(7703) 검증
  */
 export async function verifyCloudflareAccess(
   request: Request,
   env: Env
 ): Promise<AdminIdentity | null> {
+  // 1. 관리자 전용 비밀번호 PIN 검증 (7703)
+  const pinHeader =
+    request.headers.get('x-admin-pin') ||
+    request.headers.get('X-Admin-Pin');
+
+  if (pinHeader === ADMIN_PIN) {
+    return {
+      email: 'admin@futureschool.allforedu.kr',
+      sub: 'admin-pin-auth',
+      authenticated: true
+    };
+  }
+
   const jwt =
     request.headers.get('Cf-Access-Jwt-Assertion') ||
     request.headers.get('cf-access-jwt-assertion') ||
