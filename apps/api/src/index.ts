@@ -50,6 +50,11 @@ export default {
     const url = new URL(request.url);
     const method = request.method.toUpperCase();
     const pathname = url.pathname;
+    const isApi = pathname.startsWith('/api/') || pathname.startsWith('/chatbot/api/');
+    // /chatbot/api/... 경로를 내부 표준 /api/chatbot/... 경로로 정규화
+    const apiPath = pathname.startsWith('/chatbot/api/')
+      ? pathname.replace('/chatbot/api/', '/api/chatbot/')
+      : pathname;
 
     // 1. OPTIONS 프리플라이트 처리
     if (method === 'OPTIONS') {
@@ -62,7 +67,7 @@ export default {
 
     try {
       // 2. 정적 에셋 서빙 (Workers Static Assets 환경에서 SPA 프런트엔드 제공)
-      if (!pathname.startsWith('/api/') && env.ASSETS) {
+      if (!isApi && env.ASSETS) {
         // (1) 루트 / 또는 /chatbot 접속 시 표준 경로 /chatbot/ 으로 302 리디렉션
         if (pathname === '/' || pathname === '') {
           return Response.redirect(new URL('/chatbot/', request.url).toString(), 302);
@@ -109,41 +114,41 @@ export default {
         return Response.redirect(new URL('/chatbot/', request.url).toString(), 302);
       }
 
-      // 3. 라우팅 매칭
+      // 3. 라우팅 매칭 (apiPath 기준으로 통일 매칭)
       // --- 공개 API ---
-      if (pathname === '/api/chatbot/health' && method === 'GET') {
+      if (apiPath === '/api/chatbot/health' && method === 'GET') {
         response = await handleHealth(request, env);
-      } else if (pathname === '/api/chatbot/search' && method === 'POST') {
+      } else if (apiPath === '/api/chatbot/search' && method === 'POST') {
         response = await handleSearch(request, env);
-      } else if (pathname === '/api/chatbot/chat' && method === 'POST') {
+      } else if (apiPath === '/api/chatbot/chat' && method === 'POST') {
         response = await handleChat(request, env);
-      } else if (pathname === '/api/chatbot/documents' && method === 'GET') {
+      } else if (apiPath === '/api/chatbot/documents' && method === 'GET') {
         response = await handleListDocuments(request, env);
-      } else if (pathname.match(/^\/api\/chatbot\/documents\/([^\/]+)\/file$/) && method === 'GET') {
-        const docId = pathname.match(/^\/api\/chatbot\/documents\/([^\/]+)\/file$/)![1];
+      } else if (apiPath.match(/^\/api\/chatbot\/documents\/([^\/]+)\/file$/) && method === 'GET') {
+        const docId = apiPath.match(/^\/api\/chatbot\/documents\/([^\/]+)\/file$/)![1];
         response = await handleGetDocumentFile(request, env, docId);
-      } else if (pathname.match(/^\/api\/chatbot\/documents\/([^\/]+)$/) && method === 'GET') {
-        const docId = pathname.match(/^\/api\/chatbot\/documents\/([^\/]+)$/)![1];
+      } else if (apiPath.match(/^\/api\/chatbot\/documents\/([^\/]+)$/) && method === 'GET') {
+        const docId = apiPath.match(/^\/api\/chatbot\/documents\/([^\/]+)$/)![1];
         response = await handleGetDocument(request, env, docId);
       }
 
       // --- 관리자 API (Cloudflare Access 보호) ---
-      else if (pathname === '/api/chatbot/admin/documents' && method === 'GET') {
+      else if (apiPath === '/api/chatbot/admin/documents' && method === 'GET') {
         response = await handleAdminListDocuments(request, env);
-      } else if (pathname === '/api/chatbot/admin/documents' && method === 'POST') {
+      } else if (apiPath === '/api/chatbot/admin/documents' && method === 'POST') {
         response = await handleAdminCreateDocument(request, env);
-      } else if (pathname.match(/^\/api\/chatbot\/admin\/documents\/([^\/]+)\/reindex$/) && method === 'POST') {
-        const docId = pathname.match(/^\/api\/chatbot\/admin\/documents\/([^\/]+)\/reindex$/)![1];
+      } else if (apiPath.match(/^\/api\/chatbot\/admin\/documents\/([^\/]+)\/reindex$/) && method === 'POST') {
+        const docId = apiPath.match(/^\/api\/chatbot\/admin\/documents\/([^\/]+)\/reindex$/)![1];
         response = await handleAdminReindexDocument(request, env, docId);
-      } else if (pathname.match(/^\/api\/chatbot\/admin\/documents\/([^\/]+)$/) && method === 'PUT') {
-        const docId = pathname.match(/^\/api\/chatbot\/admin\/documents\/([^\/]+)$/)![1];
+      } else if (apiPath.match(/^\/api\/chatbot\/admin\/documents\/([^\/]+)$/) && method === 'PUT') {
+        const docId = apiPath.match(/^\/api\/chatbot\/admin\/documents\/([^\/]+)$/)![1];
         response = await handleAdminUpdateDocument(request, env, docId);
-      } else if (pathname.match(/^\/api\/chatbot\/admin\/documents\/([^\/]+)$/) && method === 'DELETE') {
-        const docId = pathname.match(/^\/api\/chatbot\/admin\/documents\/([^\/]+)$/)![1];
+      } else if (apiPath.match(/^\/api\/chatbot\/admin\/documents\/([^\/]+)$/) && method === 'DELETE') {
+        const docId = apiPath.match(/^\/api\/chatbot\/admin\/documents\/([^\/]+)$/)![1];
         response = await handleAdminDeleteDocument(request, env, docId);
-      } else if (pathname === '/api/chatbot/admin/usage' && method === 'GET') {
+      } else if (apiPath === '/api/chatbot/admin/usage' && method === 'GET') {
         response = await handleAdminUsageStats(request, env);
-      } else if (pathname === '/api/chatbot/admin/test-search' && method === 'POST') {
+      } else if (apiPath === '/api/chatbot/admin/test-search' && method === 'POST') {
         response = await handleAdminTestSearch(request, env);
       }
 

@@ -11,7 +11,7 @@ import {
   AdminStats
 } from '@create-chatbot/shared';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/chatbot';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/chatbot/api';
 
 export async function sendChatMessage(
   message: string,
