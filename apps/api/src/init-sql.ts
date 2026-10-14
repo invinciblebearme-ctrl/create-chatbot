@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS ai_usage (
 
 CREATE INDEX IF NOT EXISTS idx_ai_usage_date ON ai_usage(date);
 
-CREATE VIRTUAL TABLE IF NOT EXISTS document_chunks_fts USING fts5(
+CREATE VIRTUAL TABLE document_chunks_fts USING fts5(
   chunk_id UNINDEXED,
   document_id UNINDEXED,
   content,

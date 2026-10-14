@@ -21,7 +21,7 @@ import {
 import { generateAiAnswer, generateSearchFallbackAnswer } from '../ai';
 import { sanitizeUserInput, checkRateLimit } from '../security';
 import { generateSamplePdf } from '../sample-pdf';
-import { INITIAL_MIGRATION_SQL } from '../init-sql';
+import { runDatabaseSetup } from '../db-setup';
 
 let isDbInitialized = false;
 
@@ -34,15 +34,15 @@ export async function ensureDatabase(env: Env): Promise<void> {
     const check = await env.DB.prepare("SELECT count(*) as cnt FROM sqlite_master WHERE type='table' AND name='documents'").first<{ cnt: number }>();
     if (!check || check.cnt === 0) {
       console.log('D1 documents table missing. Initializing schema and seed data...');
-      await env.DB.exec(INITIAL_MIGRATION_SQL);
+      await runDatabaseSetup(env);
       isDbInitialized = true;
     } else {
       isDbInitialized = true;
     }
   } catch (err: any) {
-    console.error('ensureDatabase error, trying direct exec:', err);
+    console.error('ensureDatabase error, trying safe setup:', err);
     try {
-      await env.DB.exec(INITIAL_MIGRATION_SQL);
+      await runDatabaseSetup(env);
       isDbInitialized = true;
     } catch (e2) {
       console.error('Failed to auto-init database:', e2);
@@ -136,7 +136,7 @@ export async function handleChat(request: Request, env: Env): Promise<Response> 
       category: r.category,
       page_number: r.page_number,
       excerpt: r.content.slice(0, 150) + (r.content.length > 150 ? '...' : ''),
-      file_url: `/api/chatbot/documents/${r.document_id}/file`
+      file_url: `/chatbot/api/documents/${r.document_id}/file`
     }));
 
     // 2. 모드별 분기 처리

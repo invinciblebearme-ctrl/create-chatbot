@@ -71,7 +71,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
     setLoadingPdf(true);
     setRenderError(null);
 
-    const fileUrl = `/api/chatbot/documents/${docId}/file`;
+    const fileUrl = `/chatbot/api/documents/${docId}/file`;
 
     const loadingTask = pdfjsLib.getDocument({
       url: fileUrl,
@@ -157,7 +157,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
     let isMounted = true;
     setLoadingChunks(true);
 
-    fetch(`/api/chatbot/documents/${docId}`)
+    fetch(`/chatbot/api/documents/${docId}`)
       .then(res => res.json())
       .then(data => {
         if (isMounted && data.chunks) {
@@ -178,7 +178,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
 
   if (!isOpen || !docId) return null;
 
-  const fileUrl = `/api/chatbot/documents/${docId}/file`;
+  const fileUrl = `/chatbot/api/documents/${docId}/file`;
   const pageChunks = chunks.filter(c => c.page_number === currentPage);
 
   const handleCopyText = (text: string) => {

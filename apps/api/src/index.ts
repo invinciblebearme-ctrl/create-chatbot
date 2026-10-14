@@ -13,6 +13,7 @@ import {
   jsonResponse,
   ensureDatabase
 } from './routes/public';
+import { runDatabaseSetup } from './db-setup';
 import {
   handleAdminListDocuments,
   handleAdminCreateDocument,
@@ -120,8 +121,14 @@ export default {
       if (apiPath === '/api/chatbot/health' && method === 'GET') {
         response = await handleHealth(request, env);
       } else if ((apiPath === '/api/chatbot/init' || apiPath === '/api/chatbot/init-db') && (method === 'GET' || method === 'POST')) {
-        await ensureDatabase(env);
-        response = jsonResponse({ success: true, message: 'D1 데이터베이스가 성공적으로 초기화되었습니다.' });
+        const setupResult = await runDatabaseSetup(env);
+        response = jsonResponse({
+          success: setupResult.success,
+          message: setupResult.success
+            ? 'D1 데이터베이스가 성공적으로 초기화되었습니다.'
+            : 'D1 데이터베이스 초기화 중 일부 오류가 발생했습니다.',
+          ...setupResult
+        });
       } else if (apiPath === '/api/chatbot/search' && method === 'POST') {
         response = await handleSearch(request, env);
       } else if (apiPath === '/api/chatbot/chat' && method === 'POST') {
