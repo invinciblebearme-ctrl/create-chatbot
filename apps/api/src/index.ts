@@ -10,7 +10,8 @@ import {
   handleGetDocument,
   handleGetDocumentFile,
   handleHealth,
-  jsonResponse
+  jsonResponse,
+  ensureDatabase
 } from './routes/public';
 import {
   handleAdminListDocuments,
@@ -118,6 +119,9 @@ export default {
       // --- 공개 API ---
       if (apiPath === '/api/chatbot/health' && method === 'GET') {
         response = await handleHealth(request, env);
+      } else if ((apiPath === '/api/chatbot/init' || apiPath === '/api/chatbot/init-db') && (method === 'GET' || method === 'POST')) {
+        await ensureDatabase(env);
+        response = jsonResponse({ success: true, message: 'D1 데이터베이스가 성공적으로 초기화되었습니다.' });
       } else if (apiPath === '/api/chatbot/search' && method === 'POST') {
         response = await handleSearch(request, env);
       } else if (apiPath === '/api/chatbot/chat' && method === 'POST') {

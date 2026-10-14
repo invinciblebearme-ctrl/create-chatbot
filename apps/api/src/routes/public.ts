@@ -21,6 +21,34 @@ import {
 import { generateAiAnswer, generateSearchFallbackAnswer } from '../ai';
 import { sanitizeUserInput, checkRateLimit } from '../security';
 import { generateSamplePdf } from '../sample-pdf';
+import { INITIAL_MIGRATION_SQL } from '../init-sql';
+
+let isDbInitialized = false;
+
+/**
+ * D1 데이터베이스 테이블 및 시드 데이터 자동 초기화 (자가 복구)
+ */
+export async function ensureDatabase(env: Env): Promise<void> {
+  if (isDbInitialized) return;
+  try {
+    const check = await env.DB.prepare("SELECT count(*) as cnt FROM sqlite_master WHERE type='table' AND name='documents'").first<{ cnt: number }>();
+    if (!check || check.cnt === 0) {
+      console.log('D1 documents table missing. Initializing schema and seed data...');
+      await env.DB.exec(INITIAL_MIGRATION_SQL);
+      isDbInitialized = true;
+    } else {
+      isDbInitialized = true;
+    }
+  } catch (err: any) {
+    console.error('ensureDatabase error, trying direct exec:', err);
+    try {
+      await env.DB.exec(INITIAL_MIGRATION_SQL);
+      isDbInitialized = true;
+    } catch (e2) {
+      console.error('Failed to auto-init database:', e2);
+    }
+  }
+}
 
 /**
  * KST 기준 오늘 날짜 문자열 (YYYY-MM-DD)
@@ -52,6 +80,7 @@ export async function handleSearch(request: Request, env: Env): Promise<Response
   }
 
   try {
+    await ensureDatabase(env);
     const body = (await request.json()) as SearchRequest;
     const query = sanitizeUserInput(body.query || '');
 
@@ -84,6 +113,7 @@ export async function handleChat(request: Request, env: Env): Promise<Response> 
   }
 
   try {
+    await ensureDatabase(env);
     const body = (await request.json()) as ChatRequest;
     const userMessage = sanitizeUserInput(body.message || '');
 
@@ -174,6 +204,7 @@ export async function handleChat(request: Request, env: Env): Promise<Response> 
  */
 export async function handleListDocuments(request: Request, env: Env): Promise<Response> {
   try {
+    await ensureDatabase(env);
     const url = new URL(request.url);
     const category = url.searchParams.get('category') || undefined;
     const grade = url.searchParams.get('grade') || undefined;
@@ -270,16 +301,21 @@ export async function handleGetDocumentFile(request: Request, env: Env, docId: s
  * GET /api/chatbot/health
  */
 export async function handleHealth(request: Request, env: Env): Promise<Response> {
+  await ensureDatabase(env);
   let dbOk = false;
+  let docCount = 0;
   try {
     const res = await env.DB.prepare('SELECT 1 as alive').first();
     dbOk = !!res;
+    const countRes = await env.DB.prepare('SELECT count(*) as cnt FROM documents').first<{ cnt: number }>();
+    docCount = countRes?.cnt || 0;
   } catch {}
 
   return jsonResponse({
     status: 'healthy',
     service: 'CREATE AI 수업 도우미 API Worker',
     database: dbOk ? 'connected' : 'disconnected',
+    documents_count: docCount,
     environment: env.ENVIRONMENT || 'production',
     timestamp: new Date().toISOString()
   });
