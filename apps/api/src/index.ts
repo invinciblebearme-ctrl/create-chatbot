@@ -123,11 +123,10 @@ export default {
       } else if ((apiPath === '/api/chatbot/init' || apiPath === '/api/chatbot/init-db') && (method === 'GET' || method === 'POST')) {
         const setupResult = await runDatabaseSetup(env);
         response = jsonResponse({
-          success: setupResult.success,
+          ...setupResult,
           message: setupResult.success
             ? 'D1 데이터베이스가 성공적으로 초기화되었습니다.'
-            : 'D1 데이터베이스 초기화 중 일부 오류가 발생했습니다.',
-          ...setupResult
+            : 'D1 데이터베이스 초기화 중 일부 오류가 발생했습니다.'
         });
       } else if (apiPath === '/api/chatbot/search' && method === 'POST') {
         response = await handleSearch(request, env);
