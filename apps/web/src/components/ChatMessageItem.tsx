@@ -176,10 +176,10 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
     return (
       <div className="flex justify-end mb-4 animate-fadeIn">
         <div className="max-w-[85%] sm:max-w-[75%] flex items-start gap-2.5 flex-row-reverse">
-          <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+          <div className="w-8 h-8 rounded-[12px] bg-[#374f7e] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
             <User className="w-4 h-4" />
           </div>
-          <div className="bg-brand-600 text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm text-sm leading-relaxed">
+          <div className="bg-[#687fe0] text-white rounded-[20px] rounded-tr-sm px-4 py-3 shadow-btn text-sm leading-relaxed">
             <p className="whitespace-pre-wrap">{message.content}</p>
           </div>
         </div>
@@ -189,46 +189,46 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
 
   return (
     <div className="flex justify-start mb-6 animate-fadeIn">
-      <div className="max-w-[92%] sm:max-w-[85%] flex items-start gap-3">
-        {/* 어시스턴트 아바타 */}
-        <div className="w-8 h-8 rounded-full bg-brand-50 border border-brand-200 text-brand-700 flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5">
-          <Bot className="w-4 h-4" />
+      <div className="max-w-[94%] sm:max-w-[88%] flex items-start gap-3">
+        {/* 어시스턴트 아바타 (create.allforedu.kr 심볼 ✳) */}
+        <div className="w-9 h-9 rounded-[13px] bg-[#e2eaff] text-[#6b7fe0] flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5 text-base font-black">
+          ✳
         </div>
 
-        <div className="flex-1 bg-white border border-slate-200/90 rounded-2xl rounded-tl-sm p-4 sm:p-5 shadow-sm">
+        <div className="flex-1 bg-white border border-[#e8edf6] rounded-[22px] rounded-tl-sm p-4 sm:p-5 shadow-card">
           {/* 상단 뱃지: 모드 및 폴백 상태 */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-slate-100 text-xs">
-            <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-[#edf0f6] text-xs">
+            <div className="flex items-center gap-1.5 font-extrabold">
               {message.mode === 'ai' && !message.is_fallback ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tealbrand-50 text-tealbrand-600 font-medium">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#f1ecff] text-[#7a59d9]">
                   <Sparkles className="w-3 h-3" />
                   Workers AI 요약
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 font-medium">
-                  <Search className="w-3 h-3 text-brand-600" />
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#eaf2ff] text-[#586fca]">
+                  <Search className="w-3 h-3 text-[#687fe0]" />
                   공식 자료 발췌 검색
                 </span>
               )}
 
               {message.is_fallback && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium">
-                  <AlertTriangle className="w-3 h-3 text-amber-500" />
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#fff0e3] text-[#cf7a38]">
+                  <AlertTriangle className="w-3 h-3 text-[#cf7a38]" />
                   무료한도 검색모드 전환
                 </span>
               )}
             </div>
 
             {/* 유틸 버튼: 복사 / 다시 질문 */}
-            <div className="flex items-center gap-1 text-slate-400">
+            <div className="flex items-center gap-1 text-[#8b9ab7]">
               <button
                 type="button"
                 onClick={handleCopy}
-                className="p-1 rounded hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                className="p-1 rounded-lg hover:bg-[#f0f4fc] hover:text-[#34476a] transition-colors"
                 title="답변 내용 복사"
               >
                 {copied ? (
-                  <span className="flex items-center gap-1 text-tealbrand-600 font-medium text-[11px]">
+                  <span className="flex items-center gap-1 text-[#4aab82] font-extrabold text-[11px]">
                     <Check className="w-3.5 h-3.5" /> 복사됨
                   </span>
                 ) : (
@@ -240,7 +240,7 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                 <button
                   type="button"
                   onClick={() => onRetry(previousUserMessage)}
-                  className="p-1 rounded hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                  className="p-1 rounded-lg hover:bg-[#f0f4fc] hover:text-[#34476a] transition-colors"
                   title="이 질문 다시 하기"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
@@ -250,13 +250,13 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
           </div>
 
           {/* 본문 렌더링 */}
-          <div className="prose-chat text-slate-800">{renderMarkdown(message.content)}</div>
+          <div className="prose-chat text-[#30415e] text-sm leading-relaxed">{renderMarkdown(message.content)}</div>
 
           {/* 출처 목록 (Citations) */}
           {message.citations && message.citations.length > 0 && (
-            <div className="mt-4 pt-3.5 border-t border-slate-100">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
-                📌 참고 공식 자료 ({message.citations.length}건)
+            <div className="mt-4 pt-3.5 border-t border-[#edf0f6]">
+              <span className="text-[11px] font-black text-[#8b9ab7] uppercase tracking-wider block mb-2">
+                📌 참고 공식 교육자료 ({message.citations.length}건)
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {message.citations.map((cite, idx) => (
@@ -266,20 +266,20 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                     onClick={() =>
                       onOpenPdf(cite.document_id, cite.page_number, cite.document_title)
                     }
-                    className="flex items-center justify-between text-left p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 hover:bg-brand-50/70 hover:border-brand-300 transition-all group"
+                    className="flex items-center justify-between text-left p-2.5 rounded-[13px] bg-[#f8faff] border border-[#e8edf6] hover:bg-[#eef4ff] hover:border-[#8ba0ed] transition-all group"
                   >
                     <div className="flex items-center gap-2 min-w-0 pr-2">
-                      <FileText className="w-4 h-4 text-brand-600 flex-shrink-0" />
+                      <FileText className="w-4 h-4 text-[#687fe0] flex-shrink-0" />
                       <div className="truncate">
-                        <p className="text-xs font-semibold text-slate-800 group-hover:text-brand-900 truncate">
+                        <p className="text-xs font-extrabold text-[#34415c] group-hover:text-[#687fe0] truncate">
                           {cite.document_title}
                         </p>
-                        <span className="text-[11px] text-brand-700 font-medium">
-                          {cite.page_number}쪽 바로가기
+                        <span className="text-[11px] text-[#6179d8] font-bold">
+                          {cite.page_number}쪽 바로보기 (PDF)
                         </span>
                       </div>
                     </div>
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-600 flex-shrink-0" />
+                    <ExternalLink className="w-3.5 h-3.5 text-[#8b9ab7] group-hover:text-[#687fe0] flex-shrink-0" />
                   </button>
                 ))}
               </div>

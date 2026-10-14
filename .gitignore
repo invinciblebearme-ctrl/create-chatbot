@@ -27,4 +27,6 @@ Thumbs.db
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+# Vite temporary files
+*.timestamp-*.mjs
+vite.config.ts.timestamp-*

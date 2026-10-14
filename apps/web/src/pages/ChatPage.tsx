@@ -164,13 +164,13 @@ export const ChatPage: React.FC = () => {
       )}
 
       {/* 메인 채팅 영역 */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col">
+      <main className="flex-1 max-w-[1160px] w-full mx-auto px-4 sm:px-6 py-6 flex flex-col">
         {messages.length === 0 ? (
-          <div className="flex-1 flex flex-col justify-center items-center py-8">
+          <div className="flex-1 flex flex-col justify-center items-center py-4">
             <RecommendedQuestions onSelectQuestion={handleSendMessage} />
           </div>
         ) : (
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-4 max-w-4xl mx-auto w-full">
             {messages.map((msg, idx) => {
               const prevUserMsg =
                 msg.role === 'assistant' && idx > 0 && messages[idx - 1].role === 'user'
@@ -198,12 +198,12 @@ export const ChatPage: React.FC = () => {
             {/* 로딩 표시 */}
             {loading && (
               <div className="flex items-start gap-3 animate-pulse">
-                <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 flex-shrink-0">
-                  <Sparkles className="w-4 h-4 animate-spin" />
+                <div className="w-9 h-9 rounded-[13px] bg-[#e2eaff] flex items-center justify-center text-[#687fe0] flex-shrink-0 text-base font-black">
+                  ✳
                 </div>
-                <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm p-4 w-48 shadow-sm">
-                  <div className="h-3 bg-slate-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                <div className="bg-white border border-[#e8edf6] rounded-[22px] rounded-tl-sm p-4 w-52 shadow-card">
+                  <div className="h-3 bg-[#e8edf6] rounded w-3/4 mb-2.5"></div>
+                  <div className="h-3 bg-[#e8edf6] rounded w-1/2"></div>
                 </div>
               </div>
             )}
@@ -222,6 +222,24 @@ export const ChatPage: React.FC = () => {
         isLoading={loading}
         hasMessages={messages.length > 0}
       />
+
+      {/* 사이트 푸터 (create.allforedu.kr 스타일 완벽 동기화) */}
+      <footer className="border-t border-[#e9edf7] bg-white/70 mt-auto py-6">
+        <div className="max-w-[1160px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#8996ab]">
+          <div>
+            <strong className="text-sm text-[#617392] font-black block">
+              ✳ CREATE 모형 연구학교
+            </strong>
+            <p className="mt-1 text-[11px] text-[#8b9ab7]">
+              수업의 성장과 배움의 나눔을 위한 성과 공유 공간 · AI 수업 도우미
+            </p>
+          </div>
+          <div className="text-center sm:text-right text-[11px]">
+            <span className="font-bold">© CREATE Research School</span>
+            <span className="block text-[#a0aebb] mt-0.5">Powered by Cloudflare Pages & Workers AI</span>
+          </div>
+        </div>
+      </footer>
 
       {/* PDF 전자책 / 원본 뷰어 모달 */}
       <PdfViewerModal

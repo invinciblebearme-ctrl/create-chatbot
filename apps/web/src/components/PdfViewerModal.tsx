@@ -188,21 +188,21 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-slate-900/70 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-5xl h-[94vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-slate-900/50 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white rounded-[26px] shadow-[0_12px_40px_rgba(108,128,218,0.2)] border border-[#e8edf6] w-full max-w-5xl h-[94vh] flex flex-col overflow-hidden">
         {/* 모달 상단 헤더 */}
-        <div className="px-4 sm:px-6 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3.5 bg-[#f8faff] border-b border-[#e8edf6] flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0 pr-4">
-            <div className="w-9 h-9 rounded-xl bg-brand-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-brand-500/20">
+            <div className="w-10 h-10 rounded-2xl bg-[#e2eaff] text-[#687fe0] flex items-center justify-center flex-shrink-0 shadow-sm border border-[#cbd9fc]">
               <BookOpen className="w-5 h-5" />
             </div>
             <div className="truncate">
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 truncate">{title}</h3>
+              <h3 className="text-sm sm:text-base font-black text-[#30415e] truncate">{title}</h3>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-brand-700 font-semibold bg-brand-50 px-2 py-0.5 rounded border border-brand-200">
+                <span className="text-xs text-[#687fe0] font-bold bg-[#eaf2ff] px-2.5 py-0.5 rounded-full border border-[#d2e3fc]">
                   현재 열람: {currentPage}쪽
                 </span>
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] text-[#8b9ab7] font-medium">
                   (전체 {totalPages}페이지)
                 </span>
               </div>
@@ -211,14 +211,14 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
 
           <div className="flex items-center gap-2 flex-shrink-0">
             {/* 탭 전환 (웹 캔버스 뷰어 vs 원문 텍스트) */}
-            <div className="bg-slate-200/80 p-0.5 rounded-lg flex items-center text-xs font-semibold mr-1">
+            <div className="bg-[#eaf0fa] p-1 rounded-full flex items-center text-xs font-bold mr-1">
               <button
                 type="button"
                 onClick={() => setViewTab('canvas')}
-                className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 ${
                   viewTab === 'canvas'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-[#687fe0] text-white shadow-sm'
+                    : 'text-[#697b98] hover:text-[#30415e]'
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5" />
@@ -227,10 +227,10 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
               <button
                 type="button"
                 onClick={() => setViewTab('text')}
-                className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 ${
                   viewTab === 'text'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-[#687fe0] text-white shadow-sm'
+                    : 'text-[#697b98] hover:text-[#30415e]'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />

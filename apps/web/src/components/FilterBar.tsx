@@ -32,21 +32,21 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filter, onChange, onReset 
     (filter.subject && filter.subject !== '전체');
 
   return (
-    <div className="bg-white border-b border-slate-200 px-4 py-3 sm:px-6 shadow-sm transition-all animate-fadeIn">
-      <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+    <div className="bg-white/95 border-b border-[#e8edf7] px-4 py-3 sm:px-6 shadow-sm transition-all animate-fadeIn">
+      <div className="max-w-[1160px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="font-semibold text-slate-700">검색 범위 설정:</span>
+          <span className="font-black text-[#34476a]">검색 범위 필터:</span>
 
           {/* 자료 유형 선택 */}
           <div className="flex items-center gap-1.5">
-            <label htmlFor="filter-category" className="text-slate-500">
-              유형:
+            <label htmlFor="filter-category" className="text-[#8b9ab7] font-extrabold">
+              유형
             </label>
             <select
               id="filter-category"
               value={filter.category || '전체'}
               onChange={handleCategoryChange}
-              className="bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+              className="bg-[#f8faff] border border-[#e2e8f4] text-[#30415e] text-xs font-extrabold rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-[#687fe0]/30 focus:border-[#687fe0] outline-none"
             >
               <option value="전체">전체 유형</option>
               {DOCUMENT_CATEGORIES.map(cat => (
@@ -59,14 +59,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filter, onChange, onReset 
 
           {/* 학년 선택 */}
           <div className="flex items-center gap-1.5">
-            <label htmlFor="filter-grade" className="text-slate-500">
-              학년:
+            <label htmlFor="filter-grade" className="text-[#8b9ab7] font-extrabold">
+              학년
             </label>
             <select
               id="filter-grade"
               value={filter.grade || '전체'}
               onChange={handleGradeChange}
-              className="bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+              className="bg-[#f8faff] border border-[#e2e8f4] text-[#30415e] text-xs font-extrabold rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-[#687fe0]/30 focus:border-[#687fe0] outline-none"
             >
               {GRADE_OPTIONS.map(g => (
                 <option key={g} value={g}>
@@ -78,14 +78,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filter, onChange, onReset 
 
           {/* 교과 선택 */}
           <div className="flex items-center gap-1.5">
-            <label htmlFor="filter-subject" className="text-slate-500">
-              교과:
+            <label htmlFor="filter-subject" className="text-[#8b9ab7] font-extrabold">
+              교과
             </label>
             <select
               id="filter-subject"
               value={filter.subject || '전체'}
               onChange={handleSubjectChange}
-              className="bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+              className="bg-[#f8faff] border border-[#e2e8f4] text-[#30415e] text-xs font-extrabold rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-[#687fe0]/30 focus:border-[#687fe0] outline-none"
             >
               {SUBJECT_OPTIONS.map(s => (
                 <option key={s} value={s}>
@@ -100,10 +100,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filter, onChange, onReset 
           <button
             type="button"
             onClick={onReset}
-            className="flex items-center gap-1 text-slate-500 hover:text-rose-600 text-xs transition-colors ml-auto"
+            className="flex items-center gap-1.5 text-[#687fe0] hover:text-[#566ecf] font-extrabold text-xs transition-colors ml-auto bg-[#eaf0ff] px-2.5 py-1 rounded-lg"
           >
             <RotateCcw className="w-3 h-3" />
-            <span>필터 초기화</span>
+            <span>필터 초기화 ↺</span>
           </button>
         )}
       </div>

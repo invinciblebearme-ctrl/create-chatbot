@@ -39,8 +39,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="sticky bottom-0 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent pt-4 pb-4 px-4 sm:px-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="sticky bottom-0 bg-gradient-to-t from-[#f8faff] via-[#f8faff]/95 to-transparent pt-3 pb-4 px-4 sm:px-6">
+      <div className="max-w-[1160px] mx-auto">
         <form
           onSubmit={e => {
             e.preventDefault();
@@ -48,7 +48,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               onSubmit();
             }
           }}
-          className="bg-white rounded-2xl border border-slate-300/80 shadow-lg shadow-slate-200/50 p-2 sm:p-2.5 transition-all focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20"
+          className="bg-white rounded-[24px] border border-[#e2e8f4] shadow-card-hover p-2 sm:p-2.5 transition-all focus-within:border-[#8ba0ed] focus-within:ring-4 focus-within:ring-[#687fe0]/15"
         >
           <div className="flex items-end gap-2">
             {/* 초기화 버튼 */}
@@ -56,7 +56,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               <button
                 type="button"
                 onClick={onClear}
-                className="p-2.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors flex-shrink-0"
+                className="p-2.5 rounded-[13px] text-[#8b9ab7] hover:text-rose-600 hover:bg-rose-50 transition-colors flex-shrink-0"
                 title="대화 초기화"
               >
                 <Trash2 className="w-4 h-4" />
@@ -71,24 +71,24 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               maxLength={AI_QUOTA_POLICY.MAX_QUERY_LENGTH}
               onChange={e => onChange(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="CREATE 교수·학습 모형이나 단원설계에 대해 질문해 보세요... (Enter 전송, Shift+Enter 줄바꿈)"
+              placeholder="CREATE 모형이나 단원설계안에 대해 질문해 보세요... (Enter 전송, Shift+Enter 줄바꿈)"
               disabled={isLoading}
-              className="flex-1 max-h-36 resize-none bg-transparent py-2 px-2 text-sm text-slate-800 placeholder-slate-400 outline-none leading-relaxed"
+              className="flex-1 max-h-36 resize-none bg-transparent py-2.5 px-3 text-sm text-[#30415e] placeholder-[#9aa7bd] outline-none leading-relaxed font-sans"
             />
 
             {/* 전송 버튼 */}
             <button
               type="submit"
               disabled={isLoading || !value.trim()}
-              className={`p-2.5 rounded-xl font-medium flex items-center justify-center flex-shrink-0 transition-all ${
+              className={`p-3 rounded-[14px] font-black flex items-center justify-center flex-shrink-0 transition-all ${
                 isLoading || !value.trim()
-                  ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                  : 'bg-brand-600 hover:bg-brand-700 text-white shadow-md shadow-brand-500/20'
+                  ? 'bg-[#f0f4fc] text-[#b6c2db] cursor-not-allowed'
+                  : 'bg-[#687fe0] hover:bg-[#566ecf] text-white shadow-btn hover:-translate-y-0.5'
               }`}
               title="질문 전송"
             >
               {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin text-brand-600" />
+                <Loader2 className="w-4 h-4 animate-spin text-[#687fe0]" />
               ) : (
                 <Send className="w-4 h-4" />
               )}
@@ -96,8 +96,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </div>
 
           {/* 하단 글자 수 및 안내 */}
-          <div className="flex items-center justify-between px-2 pt-1 text-[11px] text-slate-400">
-            <span>공식 연구학교 매뉴얼과 등록된 설계안을 기준으로 답변합니다.</span>
+          <div className="flex items-center justify-between px-3 pt-1.5 text-[11px] text-[#8b9ab7] font-medium">
+            <span>공식 CREATE 연구학교 매뉴얼과 등록된 설계안을 기준으로 답변합니다.</span>
             <span>
               {value.length} / {AI_QUOTA_POLICY.MAX_QUERY_LENGTH}자
             </span>
