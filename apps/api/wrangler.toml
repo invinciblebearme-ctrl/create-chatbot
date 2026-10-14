@@ -7,7 +7,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "create-chatbot-d1"
-database_id = "placeholder-d1-id"
+database_id = "97736e02-aceb-457e-92c5-5391f5793484"
 migrations_dir = "../../migrations"
 
 # 2. Cloudflare R2 PDF 저장소 버킷 바인딩
