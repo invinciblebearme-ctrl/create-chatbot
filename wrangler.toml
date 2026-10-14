@@ -1,0 +1,42 @@
+name = "create-chatbot"
+main = "apps/api/src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# 1. Cloudflare D1 데이터베이스 바인딩
+[[d1_databases]]
+binding = "DB"
+database_name = "create-chatbot-d1"
+database_id = "97736e02-aceb-457e-92c5-5391f5793484"
+migrations_dir = "migrations"
+
+# 2. Cloudflare R2 PDF 저장소 버킷 바인딩
+[[r2_buckets]]
+binding = "DOCS_BUCKET"
+bucket_name = "create-chatbot-docs"
+
+# 3. Cloudflare Workers AI 바인딩
+[ai]
+binding = "AI"
+
+# 4. 프런트엔드 정적 웹앱 서빙 (Cloudflare Workers Static Assets)
+[assets]
+directory = "apps/web/dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = true
+
+# 5. 환경 변수 기본값
+[vars]
+ENVIRONMENT = "production"
+ALLOWED_ORIGIN = "https://create.allforedu.kr"
+CF_ACCESS_TEAM_NAME = "futureschool"
+CF_ACCESS_AUD = ""
+AI_MODEL_NAME = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+
+# 로컬 개발 환경 오버라이드
+[env.development.vars]
+ENVIRONMENT = "development"
+ALLOWED_ORIGIN = "*"
+CF_ACCESS_TEAM_NAME = "dev"
+CF_ACCESS_AUD = "dev-aud"

@@ -12,6 +12,9 @@ export interface Env {
   // Cloudflare Workers AI
   AI: any;
 
+  // Cloudflare Workers Static Assets (선택적)
+  ASSETS?: Fetcher;
+
   // 환경 변수
   ENVIRONMENT?: string;
   ALLOWED_ORIGIN?: string;

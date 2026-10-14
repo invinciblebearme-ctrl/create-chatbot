@@ -2,6 +2,7 @@
   "name": "future-chatbot-monorepo",
   "version": "1.0.0",
   "private": true,
+  "main": "apps/api/src/index.ts",
   "description": "CREATE AI 수업 도우미 - 초등학교 연구학교 CREATE 교수·학습 모형 하이브리드 AI 챗봇",
   "scripts": {
     "dev": "npm run dev --workspace=apps/web",

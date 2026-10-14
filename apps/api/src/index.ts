@@ -61,7 +61,28 @@ export default {
     let response: Response;
 
     try {
-      // 2. 라우팅 매칭
+      // 2. 정적 에셋 서빙 (Workers Static Assets 환경에서 SPA 프런트엔드 제공)
+      if (!pathname.startsWith('/api/') && env.ASSETS) {
+        if (pathname.startsWith('/chatbot/assets/')) {
+          const assetUrl = new URL(request.url);
+          assetUrl.pathname = pathname.replace('/chatbot/assets/', '/assets/');
+          return await env.ASSETS.fetch(new Request(assetUrl.toString(), request));
+        }
+        if (pathname === '/chatbot/favicon.svg') {
+          const iconUrl = new URL(request.url);
+          iconUrl.pathname = '/favicon.svg';
+          return await env.ASSETS.fetch(new Request(iconUrl.toString(), request));
+        }
+        const assetRes = await env.ASSETS.fetch(request);
+        if (assetRes.status === 404 || !pathname.includes('.')) {
+          const indexUrl = new URL(request.url);
+          indexUrl.pathname = '/index.html';
+          return await env.ASSETS.fetch(new Request(indexUrl.toString(), request));
+        }
+        return assetRes;
+      }
+
+      // 3. 라우팅 매칭
       // --- 공개 API ---
       if (pathname === '/api/chatbot/health' && method === 'GET') {
         response = await handleHealth(request, env);
