@@ -31,7 +31,7 @@ describe('Cloudflare Access Auth Tests', () => {
     });
     const result = await verifyCloudflareAccess(req, devEnv);
     expect(result).not.toBeNull();
-    expect(result?.email).toBe('dev-admin@futureschool.allforedu.kr');
+    expect(result?.email).toBe('dev-admin@create.allforedu.kr');
   });
 
   it('유효한 Cloudflare Access JWT 정상 검증', async () => {
@@ -76,7 +76,7 @@ describe('Cloudflare Access Auth Tests', () => {
     const result = await verifyCloudflareAccess(req, mockEnv);
     expect(result).not.toBeNull();
     expect(result?.authenticated).toBe(true);
-    expect(result?.email).toBe('admin@futureschool.allforedu.kr');
+    expect(result?.email).toBe('admin@create.allforedu.kr');
   });
 
   it('잘못된 관리자 PIN 헤더 입력 시 인증 실패', async () => {

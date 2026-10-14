@@ -22,7 +22,7 @@ binding = "AI"
 # 4. 환경 변수 기본값
 [vars]
 ENVIRONMENT = "production"
-ALLOWED_ORIGIN = "https://futureschool.allforedu.kr"
+ALLOWED_ORIGIN = "https://create.allforedu.kr"
 CF_ACCESS_TEAM_NAME = "futureschool"
 CF_ACCESS_AUD = ""
 AI_MODEL_NAME = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"

@@ -25,12 +25,22 @@ import {
 /**
  * CORS 응답 헤더 설정
  */
-function setCorsHeaders(headers: Headers, env: Env): void {
-  headers.set('Access-Control-Allow-Origin', env.ALLOWED_ORIGIN || '*');
+function setCorsHeaders(headers: Headers, env: Env, request?: Request): void {
+  const origin = request?.headers.get('Origin') || '';
+  if (
+    origin.includes('allforedu.kr') ||
+    origin.includes('pages.dev') ||
+    origin.includes('localhost') ||
+    origin.includes('127.0.0.1')
+  ) {
+    headers.set('Access-Control-Allow-Origin', origin);
+  } else {
+    headers.set('Access-Control-Allow-Origin', env.ALLOWED_ORIGIN || 'https://create.allforedu.kr');
+  }
   headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   headers.set(
     'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, Cf-Access-Jwt-Assertion, x-dev-admin-bypass'
+    'Content-Type, Authorization, Cf-Access-Jwt-Assertion, x-dev-admin-bypass, x-admin-pin'
   );
   headers.set('Access-Control-Max-Age', '86400');
 }
@@ -44,7 +54,7 @@ export default {
     // 1. OPTIONS 프리플라이트 처리
     if (method === 'OPTIONS') {
       const headers = new Headers();
-      setCorsHeaders(headers, env);
+      setCorsHeaders(headers, env, request);
       return new Response(null, { status: 204, headers });
     }
 
@@ -100,7 +110,7 @@ export default {
 
     // CORS 헤더 부착 후 응답 반환
     const resHeaders = new Headers(response.headers);
-    setCorsHeaders(resHeaders, env);
+    setCorsHeaders(resHeaders, env, request);
 
     return new Response(response.body, {
       status: response.status,

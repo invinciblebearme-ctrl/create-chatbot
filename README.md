@@ -2,7 +2,7 @@
 
 초등학교 연구학교의 **CREATE 교수·학습 모형** 공식 안내 및 수업 설계를 지원하는 **무료 검색 + Cloudflare Workers AI 하이브리드 교육용 챗봇**입니다.
 
-> 🏫 **공식 운영 도메인**: [https://futureschool.allforedu.kr/chatbot/](https://futureschool.allforedu.kr/chatbot/)  
+> 🏫 **공식 운영 도메인**: [https://create.allforedu.kr/chatbot/](https://create.allforedu.kr/chatbot/)  
 > 🛡️ **비용 정책**: 유료 OpenAI API, 유료 벡터 DB 없이 **Cloudflare 무료 티어 100% 범위**에서 안정적으로 운영됩니다.
 
 ---

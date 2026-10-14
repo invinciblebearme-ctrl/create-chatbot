@@ -39,7 +39,7 @@ npx wrangler r2 bucket create future-chatbot-docs
 2. **Access > Applications > Add an Application** 선택
 3. **Self-hosted** 애플리케이션 추가:
    - Application Name: `CREATE Chatbot Admin`
-   - Domain: `futureschool.allforedu.kr`
+   - Domain: `create.allforedu.kr`
    - Path: `/chatbot/admin*` 및 `/api/chatbot/admin*`
 4. **Policy(정책)** 설정:
    - Action: `Allow`
@@ -51,7 +51,7 @@ npx wrangler r2 bucket create future-chatbot-docs
 
 ## 4. GitHub Actions 배포를 위한 Secrets 등록
 
-GitHub 저장소(`future-chatbot`)의 **Settings > Secrets and variables > Actions**에서 다음 Secrets를 등록합니다:
+GitHub 저장소(`create-chatbot`)의 **Settings > Secrets and variables > Actions**에서 다음 Secrets를 등록합니다:
 
 | Secret 이름 | 설명 | 확인 방법 |
 | :--- | :--- | :--- |

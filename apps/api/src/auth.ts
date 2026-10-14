@@ -42,7 +42,7 @@ export async function verifyCloudflareAccess(
 
   if (pinHeader === ADMIN_PIN) {
     return {
-      email: 'admin@futureschool.allforedu.kr',
+      email: 'admin@create.allforedu.kr',
       sub: 'admin-pin-auth',
       authenticated: true
     };
@@ -60,7 +60,7 @@ export async function verifyCloudflareAccess(
     const devHeader = request.headers.get('x-dev-admin-bypass');
     if (devHeader === 'true' || jwt === 'mock-admin-token') {
       return {
-        email: 'dev-admin@futureschool.allforedu.kr',
+        email: 'dev-admin@create.allforedu.kr',
         sub: 'dev-admin-id',
         authenticated: true
       };
