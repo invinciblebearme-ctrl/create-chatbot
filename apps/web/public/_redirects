@@ -1,4 +1,0 @@
-# Cloudflare Pages SPA Routing & Base Path Mapping
-/chatbot/assets/*  /assets/:splat  200
-/chatbot/*         /index.html     200
-/*                 /index.html     200
