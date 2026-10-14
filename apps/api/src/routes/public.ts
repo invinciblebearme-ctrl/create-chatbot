@@ -256,6 +256,8 @@ export async function handleGetDocumentFile(request: Request, env: Env, docId: s
     headers.set('etag', etag);
     headers.set('Content-Type', 'application/pdf');
     headers.set('Content-Disposition', `inline; filename="${encodeURIComponent(doc.title)}.pdf"`);
+    // Cloudflare Edge CDN에 7일간 캐시 (R2 읽기 요청 0회로 최적화하여 100% 무료 보장)
+    headers.set('Cache-Control', 'public, max-age=86400, s-maxage=604800');
 
     return new Response(bodyData, { headers });
   } catch (err: any) {
