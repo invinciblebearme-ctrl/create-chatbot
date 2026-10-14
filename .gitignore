@@ -9,6 +9,8 @@ dist/
 build/
 out/
 .wrangler/
+*.tsbuildinfo
+worker-configuration.d.ts
 
 # Environment Variables & Secrets (절대 커밋 금지)
 .env
