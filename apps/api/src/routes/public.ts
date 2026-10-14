@@ -20,6 +20,7 @@ import {
 } from '../db';
 import { generateAiAnswer, generateSearchFallbackAnswer } from '../ai';
 import { sanitizeUserInput, checkRateLimit } from '../security';
+import { generateSamplePdf } from '../sample-pdf';
 
 /**
  * KST 기준 오늘 날짜 문자열 (YYYY-MM-DD)
@@ -195,7 +196,17 @@ export async function handleGetDocument(request: Request, env: Env, docId: strin
     if (!doc) {
       return jsonResponse({ error: '문서를 찾을 수 없습니다.' }, 404);
     }
-    return jsonResponse(doc);
+    const chunksRes = await env.DB.prepare(`
+      SELECT page_number, chunk_index, content
+      FROM document_chunks
+      WHERE document_id = ?
+      ORDER BY page_number ASC, chunk_index ASC
+    `).bind(docId).all();
+
+    return jsonResponse({
+      ...doc,
+      chunks: chunksRes.results || []
+    });
   } catch (err: any) {
     console.error('handleGetDocument error:', err);
     return jsonResponse({ error: '문서 조회 실패', details: err.message }, 500);
@@ -217,22 +228,36 @@ export async function handleGetDocumentFile(request: Request, env: Env, docId: s
       return jsonResponse({ error: '비공개 문서입니다.' }, 403);
     }
 
-    if (!env.DOCS_BUCKET) {
-      return jsonResponse({ error: 'R2 스토리지 바인딩이 구성되지 않았습니다.' }, 500);
-    }
+    let bodyData: any = null;
+    let etag = 'sample-pdf-etag';
 
-    const object = await env.DOCS_BUCKET.get(doc.r2_key);
-    if (!object) {
-      return jsonResponse({ error: 'R2 저장소에 PDF 파일이 존재하지 않습니다.' }, 404);
+    const object = env.DOCS_BUCKET ? await env.DOCS_BUCKET.get(doc.r2_key) : null;
+    if (object) {
+      bodyData = object.body;
+      etag = object.httpEtag;
+    } else {
+      // R2에 실제 PDF 파일이 아직 등록되지 않은 경우 (샘플 데이터 및 초기 상태)
+      // 표준 5페이지 샘플 PDF 바이너리를 동적으로 생성하여 뷰어에 제공
+      const samplePdfBytes = await generateSamplePdf(doc.title, doc.page_count || 5);
+      bodyData = samplePdfBytes;
+      // R2 바인딩이 있으면 캐싱 저장
+      if (env.DOCS_BUCKET) {
+        try {
+          await env.DOCS_BUCKET.put(doc.r2_key, samplePdfBytes, {
+            httpMetadata: { contentType: 'application/pdf' }
+          });
+        } catch (e) {
+          console.warn('Failed to cache sample PDF in R2:', e);
+        }
+      }
     }
 
     const headers = new Headers();
-    object.writeHttpMetadata(headers);
-    headers.set('etag', object.httpEtag);
+    headers.set('etag', etag);
     headers.set('Content-Type', 'application/pdf');
     headers.set('Content-Disposition', `inline; filename="${encodeURIComponent(doc.title)}.pdf"`);
 
-    return new Response(object.body, { headers });
+    return new Response(bodyData, { headers });
   } catch (err: any) {
     console.error('handleGetDocumentFile error:', err);
     return jsonResponse({ error: 'PDF 파일 스트리밍 실패', details: err.message }, 500);
