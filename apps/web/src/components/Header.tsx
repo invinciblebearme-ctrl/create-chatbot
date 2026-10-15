@@ -33,7 +33,11 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="max-w-[1160px] mx-auto px-4 sm:px-6 h-[72px] flex items-center justify-between">
           {/* 브랜드 로고 (create.allforedu.kr 통일) */}
           <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2.5 text-left group">
+            <a
+              href="https://create.allforedu.kr"
+              className="flex items-center gap-2.5 text-left group"
+              title="create.allforedu.kr 메인 포털로 이동"
+            >
               <div className="w-11 h-11 rounded-[14px] bg-[#e2eaff] flex items-center justify-center text-2xl text-[#6b7fe0] shadow-sm group-hover:scale-105 transition-transform">
                 ✳
               </div>
@@ -45,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
                   AI ASSISTANT · RESEARCH SCHOOL
                 </small>
               </div>
-            </Link>
+            </a>
 
             {/* 메인 포털 상단 메뉴 네비게이션 */}
             <nav className="hidden lg:flex items-center gap-1 text-xs font-extrabold text-[#697997]">
