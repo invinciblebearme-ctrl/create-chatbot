@@ -36,7 +36,7 @@ export const RecommendedQuestions: React.FC<RecommendedQuestionsProps> = ({
 
         <div className="max-w-2xl mx-auto relative z-10">
           <span className="inline-block text-[11px] font-black tracking-[1.8px] text-[#91a0d0] uppercase mb-2">
-            ✦ CREATE RESEARCH SCHOOL AI ASSISTANT ✦
+            ✦ AI DIGITAL RESEARCH SCHOOL AI ASSISTANT ✦
           </span>
           <h1 className="text-2xl sm:text-4xl font-black text-[#34476a] tracking-tight leading-[1.3] mb-3">
             함께 설계하고,<br />
@@ -72,7 +72,7 @@ export const RecommendedQuestions: React.FC<RecommendedQuestionsProps> = ({
             EXPLORE QUESTIONS
           </span>
           <h2 className="text-lg sm:text-xl font-black text-[#33445f] tracking-tight">
-            자주 묻는 CREATE 질문 <span className="text-[#e3a7d1]">✦</span>
+            자주 묻는 질문 <span className="text-[#e3a7d1]">✦</span>
           </h2>
         </div>
         <span className="text-xs font-extrabold text-[#7b8db3] bg-[#eaf0ff] rounded-full px-3 py-1">

@@ -228,14 +228,14 @@ export const ChatPage: React.FC = () => {
         <div className="max-w-[1160px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#8996ab]">
           <div>
             <strong className="text-sm text-[#617392] font-black block">
-              ✳ CREATE 모형 연구학교
+              ✳ 2026 교육부 요청 전북특별자치도교육청지정 AI 디지털 활용 연구학교 군산초등학교
             </strong>
             <p className="mt-1 text-[11px] text-[#8b9ab7]">
               수업의 성장과 배움의 나눔을 위한 성과 공유 공간 · AI 수업 도우미
             </p>
           </div>
           <div className="text-center sm:text-right text-[11px]">
-            <span className="font-bold">© CREATE Research School</span>
+            <span className="font-bold">© AI DIGITAL Research School</span>
             <span className="block text-[#a0aebb] mt-0.5">Powered by Cloudflare Pages & Workers AI</span>
           </div>
         </div>

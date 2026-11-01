@@ -36,17 +36,29 @@ export const Header: React.FC<HeaderProps> = ({
             <a
               href="https://create.allforedu.kr"
               className="flex items-center gap-2.5 text-left group"
-              title="create.allforedu.kr 메인 포털로 이동"
+              title="메인 포털로 이동"
             >
-              <div className="w-11 h-11 rounded-[14px] bg-[#e2eaff] flex items-center justify-center text-2xl text-[#6b7fe0] shadow-sm group-hover:scale-105 transition-transform">
-                ✳
+              <div className="w-11 h-11 rounded-[15px] bg-[#eef3ff] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                <svg
+                  className="w-6 h-6 text-[#6277e0]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                >
+                  <line x1="12" y1="3.5" x2="12" y2="20.5" />
+                  <line x1="3.5" y1="12" x2="20.5" y2="12" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                  <line x1="6" y1="18" x2="18" y2="6" />
+                </svg>
               </div>
               <div>
-                <strong className="text-xl font-black text-[#374f7e] tracking-wider leading-none block">
-                  CREATE
+                <strong className="text-xl font-black text-[#2e4370] tracking-wider leading-none block">
+                  AI DIGITAL
                 </strong>
-                <small className="text-[9px] font-bold tracking-[1.8px] text-[#8b9ab7] uppercase mt-1 block">
-                  AI ASSISTANT · RESEARCH SCHOOL
+                <small className="text-[10px] font-bold tracking-[2px] text-[#7d90ac] uppercase mt-1 block">
+                  RESEARCH SCHOOL
                 </small>
               </div>
             </a>
