@@ -65,9 +65,14 @@ export const ChatPage: React.FC = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const handleSendMessage = async (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string, overrideMode?: ChatMode) => {
     const query = (textToSend || input).trim();
     if (!query || loading) return;
+
+    const targetMode = overrideMode || mode;
+    if (overrideMode && overrideMode !== mode) {
+      setMode(overrideMode);
+    }
 
     setErrorNotice(null);
     setInput('');
@@ -88,7 +93,7 @@ export const ChatPage: React.FC = () => {
           ? filter
           : undefined;
 
-      const response = await sendChatMessage(query, mode, activeFilter);
+      const response = await sendChatMessage(query, targetMode, activeFilter);
 
       const botMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
@@ -107,6 +112,10 @@ export const ChatPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRetrySummary = (query: string) => {
+    handleSendMessage(query, 'ai');
   };
 
   const handleClearChat = () => {
@@ -173,8 +182,11 @@ export const ChatPage: React.FC = () => {
           <div className="flex-1 space-y-4 max-w-4xl mx-auto w-full">
             {messages.map((msg, idx) => {
               const prevUserMsg =
-                msg.role === 'assistant' && idx > 0 && messages[idx - 1].role === 'user'
-                  ? messages[idx - 1].content
+                msg.role === 'assistant'
+                  ? messages
+                      .slice(0, idx)
+                      .reverse()
+                      .find(m => m.role === 'user')?.content
                   : undefined;
 
               return (
@@ -183,6 +195,7 @@ export const ChatPage: React.FC = () => {
                   message={msg}
                   previousUserMessage={prevUserMsg}
                   onRetry={handleSendMessage}
+                  onRetrySummary={handleRetrySummary}
                   onOpenPdf={(docId, pageNumber, title) =>
                     setViewerModal({
                       isOpen: true,

@@ -19,6 +19,7 @@ import {
 interface ChatMessageItemProps {
   message: ChatMessage;
   onRetry?: (query: string) => void;
+  onRetrySummary?: (query: string) => void;
   onOpenPdf: (docId: string, pageNumber: number, title: string) => void;
   previousUserMessage?: string;
 }
@@ -171,6 +172,7 @@ function renderMarkdown(content: string) {
 export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
   message,
   onRetry,
+  onRetrySummary,
   onOpenPdf,
   previousUserMessage
 }) => {
@@ -230,8 +232,20 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
               )}
             </div>
 
-            {/* 유틸 버튼: 복사 / 다시 질문 */}
-            <div className="flex items-center gap-1 text-[#8b9ab7]">
+            {/* 유틸 버튼: AI 요약 다시 질문 / 복사 / 일반 다시 질문 */}
+            <div className="flex items-center gap-1.5 text-[#8b9ab7]">
+              {onRetrySummary && previousUserMessage && (
+                <button
+                  type="button"
+                  onClick={() => onRetrySummary(previousUserMessage)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-gradient-to-r from-[#f0ebff] to-[#f4f0ff] hover:from-[#e7deff] hover:to-[#eee6ff] text-[#6f4bd8] border border-[#e2d5ff] font-extrabold text-[11px] shadow-2xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  title="이 질문을 Workers AI 요약 모드로 다시 질문하기"
+                >
+                  <Sparkles className="w-3 h-3 text-[#7f5de0]" />
+                  <span>AI 요약으로 다시 질문</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={handleCopy}
@@ -293,6 +307,38 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                     <ExternalLink className="w-3.5 h-3.5 text-[#8b9ab7] group-hover:text-[#687fe0] flex-shrink-0" />
                   </button>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* 하단 질문 재질문 액션 바 */}
+          {onRetrySummary && previousUserMessage && (
+            <div className="mt-4 pt-3.5 border-t border-[#edf0f6] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-[#f8faff] -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 p-3.5 sm:px-5 sm:py-3 rounded-b-[22px]">
+              <div className="flex items-center gap-1.5 text-xs text-[#627392]">
+                <span className="font-bold text-[#445579]">💡 대답이 마음에 들지 않으신가요?</span>
+                <span className="hidden md:inline text-[#8a99b2]">AI가 전체 문서를 종합 분석하여 다시 답변해 드립니다.</span>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {onRetry && (
+                  <button
+                    type="button"
+                    onClick={() => onRetry(previousUserMessage)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white border border-[#d9e2f2] hover:bg-[#f0f4fc] text-[#617392] hover:text-[#30415e] text-xs font-bold transition-all shadow-2xs"
+                    title="기존 모드로 다시 질문하기"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>다시 질문</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onRetrySummary(previousUserMessage)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#687fe0] via-[#7462e0] to-[#8854dc] hover:opacity-95 text-white text-xs font-black shadow-pill hover:shadow-btn hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                  title="Workers AI 요약 모드로 전환하여 답변 다시 생성"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+                  <span>AI 요약으로 다시 질문</span>
+                </button>
               </div>
             </div>
           )}
