@@ -19,27 +19,29 @@ describe('Search and AI Answering Tests', () => {
     }
   ];
 
-  it('자료 검색 폴백 답변 생성: 출처 제목과 쪽수 포함 확인', () => {
+  it('자료 검색 폴백 답변 생성: 출처 제목과 쪽수 및 CREATE 모형 요약 포함 확인', () => {
     const answer = generateSearchFallbackAnswer(mockSearchResults);
     expect(answer).toContain('CREATE 수업설계 모형 길잡이');
     expect(answer).toContain('p.1');
-    expect(answer).toContain('학습자 주도형 모델');
+    expect(answer).toContain('CREATE 6단계 교수·학습 모형');
   });
 
-  it('자료가 없을 때 추측 방지: 확인 불가 안내 문구 반환', () => {
-    const emptyAnswer = generateSearchFallbackAnswer([]);
-    expect(emptyAnswer).toContain('공식 자료에서 관련된 내용을 확인할 수 없습니다');
+  it('자료가 검색되지 않아도 CREATE 모형 안내 및 환류 가이드 제공', () => {
+    const emptyAnswer = generateSearchFallbackAnswer([], '수업 설계 팁 알려줘');
+    expect(emptyAnswer).toContain('CREATE 6단계 교수·학습 모형 요약');
+    expect(emptyAnswer).toContain('단계의 흐름 및 환류 규칙');
   });
 
-  it('AI 답변 생성 시 근거 자료 부재 시 할루시네이션 방지', async () => {
+  it('AI 답변 생성 시 AI 서비스 미연동 상태에서도 안전하게 모형 가이드 폴백 제공', async () => {
     const mockEnv: Env = {
       DB: {} as any,
       DOCS_BUCKET: {} as any,
-      AI: {} as any
+      AI: undefined as any
     };
 
-    const result = await generateAiAnswer(mockEnv, '존재하지 않는 가상의 단원 알려줘', []);
-    expect(result.answer).toContain('제공된 CREATE 연구학교 공식 자료에서 관련된 내용을 확인할 수 없습니다');
-    expect(result.modelUsed).toBe('rule-based');
+    const result = await generateAiAnswer(mockEnv, '수업 설계 시 유의할 점 알려줘', []);
+    expect(result.answer).toContain('CREATE 6단계 교수·학습 모형 요약');
+    expect(result.isFallback).toBe(true);
+    expect(result.modelUsed).toBe('fallback-search');
   });
 });

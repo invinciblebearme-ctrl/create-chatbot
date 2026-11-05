@@ -31,14 +31,21 @@ let isDbInitialized = false;
 export async function ensureDatabase(env: Env): Promise<void> {
   if (isDbInitialized) return;
   try {
-    const check = await env.DB.prepare("SELECT count(*) as cnt FROM sqlite_master WHERE type='table' AND name='documents'").first<{ cnt: number }>();
-    if (!check || check.cnt === 0) {
+    const tableCheck = await env.DB.prepare("SELECT count(*) as cnt FROM sqlite_master WHERE type='table' AND name='documents'").first<{ cnt: number }>();
+    if (!tableCheck || tableCheck.cnt === 0) {
       console.log('D1 documents table missing. Initializing schema and seed data...');
       await runDatabaseSetup(env);
       isDbInitialized = true;
-    } else {
-      isDbInitialized = true;
+      return;
     }
+
+    // 공식 연구학교 자료가 적재되어 있는지 확인
+    const guideCheck = await env.DB.prepare("SELECT count(*) as cnt FROM documents WHERE id = 'doc-guide-manual'").first<{ cnt: number }>();
+    if (!guideCheck || guideCheck.cnt === 0) {
+      console.log('D1 documents table exists but official seed data missing. Initializing seed data...');
+      await runDatabaseSetup(env);
+    }
+    isDbInitialized = true;
   } catch (err: any) {
     console.error('ensureDatabase error, trying safe setup:', err);
     try {
@@ -158,7 +165,7 @@ export async function handleChat(request: Request, env: Env): Promise<Response> 
         isFallback = true;
         answerText =
           '> ℹ️ **[안내]** 오늘의 AI 요약 권장 한도에 도달하여 공식 자료 검색 모드로 전환되었습니다.\n\n' +
-          generateSearchFallbackAnswer(searchResults);
+          generateSearchFallbackAnswer(searchResults, userMessage);
       } else {
         // Workers AI 생성 호출
         const aiResult = await generateAiAnswer(env, userMessage, searchResults);
@@ -177,7 +184,7 @@ export async function handleChat(request: Request, env: Env): Promise<Response> 
       }
     } else {
       // 무료 자료 검색 모드 (기본)
-      answerText = generateSearchFallbackAnswer(searchResults);
+      answerText = generateSearchFallbackAnswer(searchResults, userMessage);
     }
 
     const responsePayload: ChatResponse = {

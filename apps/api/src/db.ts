@@ -79,20 +79,26 @@ export async function searchDocumentsAndChunks(
     const result = await stmt.all();
     rows = result.results || [];
   } catch (err) {
-    console.warn('Direct query failed or no matches, falling back to recent chunks:', err);
-    // 폴백: 최근 청크 일부 검색
+    console.warn('Direct query failed:', err);
+    rows = [];
+  }
+
+  // 1차 검색 결과가 비어있으면, 공식 CREATE 길잡이 및 단원설계안 핵심 청크를 폴백으로 제공
+  if (rows.length === 0) {
     try {
       const fallbackStmt = db.prepare(`
         SELECT c.id AS chunk_id, c.document_id, c.page_number, c.chunk_index, c.content, c.search_text,
                d.title AS doc_title, d.category AS doc_category, d.grade AS doc_grade, d.subject AS doc_subject
         FROM document_chunks c
         JOIN documents d ON c.document_id = d.id
-        WHERE d.is_public = 1 AND d.status = 'COMPLETED'
-        LIMIT 20
+        WHERE d.is_public = 1
+        ORDER BY CASE WHEN d.id = 'doc-guide-manual' THEN 0 ELSE 1 END, c.chunk_index ASC
+        LIMIT 10
       `);
       const fallbackResult = await fallbackStmt.all();
       rows = fallbackResult.results || [];
-    } catch {
+    } catch (e2) {
+      console.warn('Fallback chunks query failed:', e2);
       rows = [];
     }
   }
@@ -125,6 +131,24 @@ export async function searchDocumentsAndChunks(
 
   // 3. 점수 내림차순 정렬 및 상위 반환
   scoredResults.sort((a, b) => b.score - a.score);
+
+  // 만약 엄격한 키워드 점수 매칭으로 0건이 나온 경우, 수집된 후보 청크를 기본 점수로 전달
+  if (scoredResults.length === 0 && rows.length > 0) {
+    for (const row of rows.slice(0, limit)) {
+      scoredResults.push({
+        id: row.chunk_id as string,
+        document_id: row.document_id as string,
+        document_title: row.doc_title as string,
+        category: row.doc_category as string,
+        grade: row.doc_grade as string,
+        subject: row.doc_subject as string,
+        page_number: Number(row.page_number),
+        content: row.content as string,
+        score: 1,
+        matched_keywords: []
+      });
+    }
+  }
 
   return scoredResults.slice(0, limit);
 }
