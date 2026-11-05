@@ -8,7 +8,7 @@ describe('Search and AI Answering Tests', () => {
     {
       id: 'chunk-1',
       document_id: 'doc-sample-1',
-      document_title: '[테스트용 샘플] CREATE 교수·학습 모형 기본 안내서',
+      document_title: 'CREATE 교수·학습 모형 기본 안내서',
       category: 'CREATE 모형 안내',
       grade: '공통',
       subject: '융합/통합',

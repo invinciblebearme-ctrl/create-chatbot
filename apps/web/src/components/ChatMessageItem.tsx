@@ -24,11 +24,19 @@ interface ChatMessageItemProps {
 }
 
 /**
+ * [테스트용 샘플] 문구 필터링 헬퍼
+ */
+export function cleanSampleText(text: string): string {
+  if (!text) return '';
+  return text.replace(/\[\s*테스트용\s*샘플(?:\s*데이터)?\s*\]\s*/g, '');
+}
+
+/**
  * XSS 방지 및 기본 마크다운 파서
  */
 function renderMarkdown(content: string) {
-  // HTML 태그 이스케이프
-  const escaped = content
+  // [테스트용 샘플] 제거 및 HTML 태그 이스케이프
+  const escaped = cleanSampleText(content)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
@@ -264,7 +272,7 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                     key={`${cite.document_id}-${cite.page_number}-${idx}`}
                     type="button"
                     onClick={() =>
-                      onOpenPdf(cite.document_id, cite.page_number, cite.document_title)
+                      onOpenPdf(cite.document_id, cite.page_number, cleanSampleText(cite.document_title))
                     }
                     className="flex items-center justify-between text-left p-2.5 rounded-[13px] bg-[#f8faff] border border-[#e8edf6] hover:bg-[#eef4ff] hover:border-[#8ba0ed] transition-all group"
                   >
@@ -272,7 +280,7 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                       <FileText className="w-4 h-4 text-[#687fe0] flex-shrink-0" />
                       <div className="truncate">
                         <p className="text-xs font-extrabold text-[#34415c] group-hover:text-[#687fe0] truncate">
-                          {cite.document_title}
+                          {cleanSampleText(cite.document_title)}
                         </p>
                         <span className="text-[11px] text-[#6179d8] font-bold">
                           {cite.page_number}쪽 바로보기 (PDF)

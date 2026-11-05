@@ -26,7 +26,7 @@ async function createKoreanPdf(outputPath, title, pagesData) {
     const { width, height } = page.getSize();
 
     // 상단 헤더
-    page.drawText('초등학교 연구학교 공식 자료 [테스트용 샘플 데이터]', {
+    page.drawText('초등학교 연구학교 공식 자료', {
       x: 50,
       y: height - 45,
       size: 9,
@@ -134,7 +134,7 @@ async function run() {
   // 1. CREATE 안내서 (5쪽)
   await createKoreanPdf(
     path.join(assetsDir, 'sample_create_guide.pdf'),
-    '[테스트용 샘플] CREATE 교수·학습 모형 기본 안내서',
+    'CREATE 교수·학습 모형 기본 안내서',
     [
       {
         subtitle: '1쪽: CREATE 모형의 개념 및 개발 배경',
@@ -198,9 +198,7 @@ CREATE 모형은 다음의 6가지 핵심 단계로 유기적으로 연계되어
 2) 모든 단계를 기계적으로 순차 적용하기보다 단원의 성취기준과 학생 발달 단계에 맞게 유연하게 재구성할 수 있습니다.
 3) T(변형/심화) 단계의 피드백 과정을 생략하지 말고 동료 간 성장을 지원하는 안전한 학급 문화를 조성해야 합니다.
 4) 결과물 중심의 평가를 지양하고 전 과정에서 과정중심평가와 배움 기록을 누적합니다.
-5) 디지털 도구는 목적이 아닌 문제해결을 촉진하는 도구로 적절하게 배치해야 합니다.
-
-* 본 자료는 테스트용 샘플 데이터이며 관리자 화면에서 공식 인쇄본 PDF로 교체할 수 있습니다.`
+5) 디지털 도구는 목적이 아닌 문제해결을 촉진하는 도구로 적절하게 배치해야 합니다.`
       }
     ]
   );
@@ -208,7 +206,7 @@ CREATE 모형은 다음의 6가지 핵심 단계로 유기적으로 연계되어
   // 2. 5학년 단원설계안 (8쪽)
   await createKoreanPdf(
     path.join(assetsDir, 'sample_grade5_design.pdf'),
-    '[테스트용 샘플] 5학년 과학·실과 융합 CREATE 단원설계안',
+    '5학년 과학·실과 융합 CREATE 단원설계안',
     [
       {
         subtitle: '1쪽: 단원 개요 및 성취기준 분석',
@@ -230,7 +228,7 @@ CREATE 모형은 다음의 6가지 핵심 단계로 유기적으로 연계되어
   // 3. 6학년 실증수업 지도안 (6쪽)
   await createKoreanPdf(
     path.join(assetsDir, 'sample_grade6_lesson.pdf'),
-    '[테스트용 샘플] 6학년 사회과 CREATE 실증수업 지도안',
+    '6학년 사회과 CREATE 실증수업 지도안',
     [
       { subtitle: '1쪽: 단원 개요 및 수업 의도', content: '단원명: 우리나라의 민주정치 / 6학년 1학기 사회 / 수업 주제: 우리 학교의 작은 민주주의 자치 법정 열기' },
       { subtitle: '2쪽: C-R단계 - 교내 규칙 갈등 포착 및 헌법 탐구', content: 'C-R단계 활동: 복도 통행 규칙 갈등 사례를 포착하고 헌법상 기본권과 학생 자치 규정을 탐구합니다.' },

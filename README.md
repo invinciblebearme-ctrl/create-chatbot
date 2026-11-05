@@ -69,7 +69,7 @@ future-chatbot/
 │   └── shared/                  # 공통 타입, CREATE 모형 정의, 한국어 검색 유틸
 ├── migrations/                  # D1 SQLite 마이그레이션 SQL
 │   ├── 0001_initial.sql         # 테이블 및 인덱스 스키마
-│   └── 0002_seed_data.sql       # [테스트용 샘플] CREATE 모형 초기 데이터
+│   └── 0002_seed_data.sql       # CREATE 모형 초기 데이터
 ├── docs/                        # 상세 연동 및 배포 설명서
 │   ├── FUTURE_ROUTER_INTEGRATION.md  # 통합 도메인 라우터 패치 가이드
 │   ├── CLOUDFLARE_SETUP.md      # D1, R2, Access 구축 가이드

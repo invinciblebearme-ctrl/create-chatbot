@@ -92,9 +92,9 @@ export async function runDatabaseSetup(env: Env): Promise<{ success: boolean; er
   // 3. 문서가 없으면 초기 시드 데이터 등록
   if (count === 0) {
     const docInserts = [
-      `INSERT OR IGNORE INTO documents (id, title, description, category, grade, subject, tags, r2_key, page_count, status, is_public) VALUES ('doc-sample-create-guide', '[테스트용 샘플] CREATE 교수·학습 모형 기본 안내서', '초등학교 연구학교 CREATE 모형의 개념, 6단계 구성, 교수학습 활동 및 수업 설계 원칙을 안내하는 기초 매뉴얼입니다.', 'CREATE 모형 안내', '공통', '융합/통합', '["CREATE모형", "개념", "단계별활동", "유의사항", "연구학교"]', 'sample_create_guide.pdf', 5, 'COMPLETED', 1)`,
-      `INSERT OR IGNORE INTO documents (id, title, description, category, grade, subject, tags, r2_key, page_count, status, is_public) VALUES ('doc-sample-grade5-design', '[테스트용 샘플] 5학년 과학·실과 융합 CREATE 단원설계안', '5학년 태양계와 지구 및 지속가능한 에너지 기술을 주제로 한 CREATE 모형 기반 단원설계안입니다.', '학년별 단원설계안', '5학년', '과학', '["단원설계안", "5학년", "과학", "에너지", "실과"]', 'sample_grade5_design.pdf', 8, 'COMPLETED', 1)`,
-      `INSERT OR IGNORE INTO documents (id, title, description, category, grade, subject, tags, r2_key, page_count, status, is_public) VALUES ('doc-sample-grade6-lesson', '[테스트용 샘플] 6학년 사회과 CREATE 실증수업 지도안', '6학년 우리나라의 민주정치 단원에 CREATE 모형을 적용한 실제 실증수업 지도안 및 평가계획입니다.', '실증수업 지도안', '6학년', '사회', '["실증수업", "지도안", "6학년", "사회", "민주정치"]', 'sample_grade6_lesson.pdf', 6, 'COMPLETED', 1)`
+      `INSERT OR IGNORE INTO documents (id, title, description, category, grade, subject, tags, r2_key, page_count, status, is_public) VALUES ('doc-sample-create-guide', 'CREATE 교수·학습 모형 기본 안내서', '초등학교 연구학교 CREATE 모형의 개념, 6단계 구성, 교수학습 활동 및 수업 설계 원칙을 안내하는 기초 매뉴얼입니다.', 'CREATE 모형 안내', '공통', '융합/통합', '["CREATE모형", "개념", "단계별활동", "유의사항", "연구학교"]', 'sample_create_guide.pdf', 5, 'COMPLETED', 1)`,
+      `INSERT OR IGNORE INTO documents (id, title, description, category, grade, subject, tags, r2_key, page_count, status, is_public) VALUES ('doc-sample-grade5-design', '5학년 과학·실과 융합 CREATE 단원설계안', '5학년 태양계와 지구 및 지속가능한 에너지 기술을 주제로 한 CREATE 모형 기반 단원설계안입니다.', '학년별 단원설계안', '5학년', '과학', '["단원설계안", "5학년", "과학", "에너지", "실과"]', 'sample_grade5_design.pdf', 8, 'COMPLETED', 1)`,
+      `INSERT OR IGNORE INTO documents (id, title, description, category, grade, subject, tags, r2_key, page_count, status, is_public) VALUES ('doc-sample-grade6-lesson', '6학년 사회과 CREATE 실증수업 지도안', '6학년 우리나라의 민주정치 단원에 CREATE 모형을 적용한 실제 실증수업 지도안 및 평가계획입니다.', '실증수업 지도안', '6학년', '사회', '["실증수업", "지도안", "6학년", "사회", "민주정치"]', 'sample_grade6_lesson.pdf', 6, 'COMPLETED', 1)`
     ];
     for (const sql of docInserts) {
       try {

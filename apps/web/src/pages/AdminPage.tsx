@@ -905,7 +905,7 @@ export const AdminPage: React.FC = () => {
                     documents.map(doc => (
                       <tr key={doc.id} className="hover:bg-[#f8faff] transition-colors">
                         <td className="px-5 py-3.5 font-bold text-[#30415e] max-w-xs truncate">
-                          {doc.title}
+                          {doc.title.replace(/\[\s*테스트용\s*샘플(?:\s*데이터)?\s*\]\s*/g, '')}
                         </td>
                         <td className="px-4 py-3.5">
                           <span className="px-2.5 py-1 rounded-full bg-[#eaf2ff] text-[#687fe0] text-[11px] font-bold">
@@ -941,7 +941,7 @@ export const AdminPage: React.FC = () => {
                                   isOpen: true,
                                   docId: doc.id,
                                   pageNumber: 1,
-                                  title: doc.title
+                                  title: doc.title.replace(/\[\s*테스트용\s*샘플(?:\s*데이터)?\s*\]\s*/g, '')
                                 })
                               }
                               className="p-1.5 rounded-lg text-[#697b98] hover:text-[#687fe0] hover:bg-[#eaf2ff] transition-colors"

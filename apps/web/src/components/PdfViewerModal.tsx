@@ -197,7 +197,9 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
               <BookOpen className="w-5 h-5" />
             </div>
             <div className="truncate">
-              <h3 className="text-sm sm:text-base font-black text-[#30415e] truncate">{title}</h3>
+              <h3 className="text-sm sm:text-base font-black text-[#30415e] truncate">
+                {title.replace(/\[\s*테스트용\s*샘플(?:\s*데이터)?\s*\]\s*/g, '')}
+              </h3>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-xs text-[#687fe0] font-bold bg-[#eaf2ff] px-2.5 py-0.5 rounded-full border border-[#d2e3fc]">
                   현재 열람: {currentPage}쪽
