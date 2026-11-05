@@ -7,6 +7,7 @@ import { SEED_DATA_SQL } from './init-sql';
 
 export async function runDatabaseSetup(env: Env): Promise<{ success: boolean; errors: string[]; docsCount: number }> {
   const errors: string[] = [];
+  let count = 0;
 
   // 1. DDL 테이블 생성 (단일 쿼리 순차 실행)
   const ddlStatements = [
@@ -133,12 +134,12 @@ export async function runDatabaseSetup(env: Env): Promise<{ success: boolean; er
       errors.push(`FTSSync: ${e.message}`);
     }
 
-    // 공식 연구학교 FAQ 등록 (이미지와 100% 동일한 6단계 및 환류 메커니즘)
+    // 공식 연구학교 FAQ 등록 (진단–탐색–실행–분석–전이–성장 100% 일치)
     const faqInserts = [
-      `INSERT OR REPLACE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-1', 'CREATE 모형이란 무엇인가요?', 'CREATE 모형은 초등학교 연구학교에서 개발된 AI·디지털 연계 교수·학습 모델입니다. C(진단 Check & Context), R(탐색 Research & Resource), E(실행 Execution & Engage), A(분석 Analysis & Action), T(전이 Transfer & Think), E(성장 Evolve & Evaluate)의 6단계를 거치며 맞춤형 탐구와 깊이 있는 배움을 지원합니다.', 'CREATE 모형 안내', 'doc-guide-manual', 1, 1)`,
-      `INSERT OR REPLACE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-2', 'CREATE 모형은 어떤 단계로 구성되나요?', 'CREATE 모형은 6단계로 구성됩니다: 1. C 진단(Check & Context: 개별 특성 파악 및 맞춤형 출발점 설정) / 2. R 탐색(Research & Resource: 자료·교육과정 준비 및 탐구 방향 설정) / 3. E 실행(Execution & Engage: 온·오프라인 연계 맞춤형 탐구 및 협력·피드백) / 4. A 분석(Analysis & Action: 이해도 분석·평가 및 다음 단계 또는 환류 복귀 판단) / 5. T 전이(Transfer & Think: 타 교과 및 실생활 상황 연결·적용) / 6. E 성장(Evolve & Evaluate: 단원 학습 정리 및 자기 성찰)입니다.', 'CREATE 모형 안내', 'doc-guide-manual', 3, 1)`,
-      `INSERT OR REPLACE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-3', 'CREATE 모형의 환류(되돌아가기)는 어떻게 이루어지나요?', '분석(A) 단계에서 학생의 이해도를 분석·평가하여 다음 단계로 나아갈지 되돌아갈지 판단합니다. 목표 도달 시 T(전이) 및 E(성장)으로 나아가며, 이해도가 낮으면 E(실행)으로 복귀하여 다시 실행 후 재분석하고, 필요하면 R(탐색)으로 복귀하여 재설계 후 다시 실행합니다.', 'CREATE 모형 안내', 'doc-guide-manual', 3, 1)`,
-      `INSERT OR REPLACE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-4', '수업 설계 시 유의할 점은 무엇인가요?', '1) AI·디지털 도구는 목적이 아닌 문제해결을 위한 수단으로 적재적소에 활용해야 합니다. 2) 6단계를 기계적으로 순차 적용하지 않고 분석(A) 결과에 따라 유연하게 환류(E 또는 R로 복귀)를 운영합니다. 3) T(전이) 단계의 실생활 연결과 E(성장) 단계의 자기성찰 활동을 내실 있게 구성해야 합니다.', 'CREATE 모형 안내', 'doc-guide-manual', 2, 1)`
+      `INSERT OR REPLACE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-1', 'CREATE 모형이란 무엇인가요?', 'CREATE 모형은 학생 맞춤형 탐구와 깊이 있는 배움을 위해 초등학교 연구학교에서 개발된 AI·디지털 연계 교수·학습 모델입니다. C(진단 Check & Context), R(탐색 Research & Resource), E(실행 Execution & Engage), A(분석 Analysis & Action), T(전이 Transfer & Think), E(성장 Evolve & Evaluate)의 6단계 흐름과 분석(A) 기반 환류를 통해 학생 주도적 성장을 지원합니다.', 'CREATE 모형 안내', 'doc-guide-manual', 1, 1)`,
+      `INSERT OR REPLACE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-2', 'CREATE 모형은 어떤 단계로 구성되나요?', 'CREATE 모형의 6단계는 다음과 같습니다:\\n1. C 진단 (Check & Context): AI·디지털 도구로 학생 개별 특성(흥미, 강점, 취약점) 파악 및 맞춤형 학습 출발점 설정 (진단 도구 선정, 실태 분석)\\n2. R 탐색 (Research & Resource): 진단 결과 바탕 자료·교육과정 준비 및 탐구 방향 설정 (교육자료 선정, 일반화 문장 및 탐구 질문 준비)\\n3. E 실행 (Execution & Engage): 온·오프라인 연계 학생 맞춤형 탐구 실행, 협력·공유·피드백 (디지털 협력, 실시간 모니터링)\\n4. A 분석 (Analysis & Action): 학생 이해도 분석·평가 및 다음 단계 또는 되돌아갈지 판단 (실행 분석, 환류 및 복귀 여부 판단)\\n5. T 전이 (Transfer & Think): 배운 개념을 타 교과와 실생활 상황에 연결·적용\\n6. E 성장 (Evolve & Evaluate): 단원 학습 정리 및 스스로 학습 성찰 (자기성찰 질문 및 활동)', 'CREATE 모형 안내', 'doc-guide-manual', 3, 1)`,
+      `INSERT OR REPLACE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-3', 'CREATE 모형의 단계 흐름과 환류는 어떻게 이루어지나요?', 'CREATE 모형은 순차 진행과 환류가 결합된 구조입니다. C(진단) ➔ R(탐색) ➔ E(실행) ➔ A(분석)을 거친 후, 분석(A) 결과 목표에 도달하면 T(전이) ➔ E(성장)으로 나아갑니다. 반면 이해도가 낮으면 E(실행)로 복귀하여 다시 실행하거나, 필요하면 R(탐색)로 복귀하여 재설계 후 다시 실행과 분석을 반복합니다.', 'CREATE 모형 안내', 'doc-guide-manual', 3, 1)`,
+      `INSERT OR REPLACE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-4', '수업 설계 시 유의할 점은 무엇인가요?', '1) AI·디지털 도구는 모든 단계에 무조건 쓰는 것이 아니라 수업 목표와 활동 목적에 맞게 적재적소에 온·오프라인을 연계해 활용합니다. 2) 6단계를 기계적으로 순차 적용하지 않고 A(분석) 단계의 환류를 통해 학생의 이해도에 맞춰 유연하게 순환 복귀합니다. 3) T(전이) 단계의 삶에 대한 적용과 E(성장) 단계의 자기 성찰을 충실히 보장해야 합니다.', 'CREATE 모형 안내', 'doc-guide-manual', 2, 1)`
     ];
     for (const sql of faqInserts) {
       try {
@@ -150,7 +151,6 @@ export async function runDatabaseSetup(env: Env): Promise<{ success: boolean; er
   }
 
   // 최종 문서 개수 확인
-  let count = 0;
   try {
     const finalRes = await env.DB.prepare("SELECT count(*) as cnt FROM documents").first<{ cnt: number }>();
     count = finalRes?.cnt || 0;

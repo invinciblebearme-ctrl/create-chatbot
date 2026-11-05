@@ -16,11 +16,11 @@ const DOC_METADATA = [
     fileName: 'CREATE 수업설계 모형 길잡이.pdf',
     id: 'doc-guide-manual',
     title: 'CREATE 수업설계 모형 길잡이',
-    description: '초등학교 연구학교 CREATE 교수·학습 모형의 6단계(C 진단 Check & Context, R 탐색 Research & Resource, E 실행 Execution & Engage, A 분석 Analysis & Action, T 전이 Transfer & Think, E 성장 Evolve & Evaluate), 단계별 활동, A단계 환류 메커니즘 및 수업 설계 원칙을 안내하는 공식 길잡이 매뉴얼입니다.',
+    description: '초등학교 연구학교 CREATE 교수·학습 모형의 6단계(진단 Check & Context, 탐색 Research & Resource, 실행 Execution & Engage, 분석 Analysis & Action, 전이 Transfer & Think, 성장 Evolve & Evaluate), 순차 및 환류 흐름, 단계별 핵심 활동 및 수업 설계 원칙을 안내하는 공식 길잡이 매뉴얼입니다.',
     category: 'CREATE 모형 안내',
     grade: '공통',
     subject: '융합/통합',
-    tags: ['CREATE모형', '진단', '탐색', '실행', '분석', '전이', '성장', 'Check', 'Context', 'Resource', 'Execution', 'Engage', 'Analysis', 'Action', 'Transfer', 'Think', 'Evolve', 'Evaluate', '환류', '길잡이', '수업설계', '연구학교']
+    tags: ['CREATE모형', '진단', '탐색', '실행', '분석', '전이', '성장', '길잡이', '수업설계', '연구학교']
   },
   {
     fileName: 'CREATE모형 단원설계안(1학년).pdf',

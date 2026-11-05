@@ -57,11 +57,11 @@ describe('Korean Search Utilities', () => {
 
   it('청크 분할 테스트: 긴 텍스트를 목표 크기 내로 분할', () => {
     const longText = `
-      1단락: CREATE 모형의 첫 번째 단계는 C단계입니다. 실생활 문제와 학습 동기를 연결합니다.
+      1단락: CREATE 모형의 첫 번째 단계는 C(진단 Check & Context) 단계입니다. AI·디지털 도구로 학생의 개별 특성을 파악해 맞춤형 학습 출발점을 정합니다.
       
-      2단락: 두 번째 단계는 R단계로 관련 정보를 수집하고 원리를 탐구합니다.
+      2단락: 두 번째 단계는 R(탐색 Research & Resource) 단계로 진단 결과를 바탕으로 자료와 교육과정을 준비하고 탐구의 방향을 정합니다.
       
-      3단락: 세 번째 단계는 E단계로 아이디어를 발상하고 실험적 탐색을 수행합니다.
+      3단락: 세 번째 단계는 E(실행 Execution & Engage) 단계로 온·오프라인을 연계해 학생 맞춤형 탐구를 실행하고 협력·공유·피드백합니다.
     `.repeat(5);
 
     const chunks = splitTextIntoChunks(longText, 200, 40);

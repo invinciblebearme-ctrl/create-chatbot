@@ -1,28 +1,10 @@
 import React from 'react';
-import { ArrowRight, RotateCcw, CheckCircle2 } from 'lucide-react';
-import { RECOMMENDED_QUESTIONS, OFFICIAL_CREATE_STAGES } from '@create-chatbot/shared';
+import { ArrowRight, RotateCcw, Sparkles, Layers, ChevronRight } from 'lucide-react';
+import { RECOMMENDED_QUESTIONS, CREATE_STAGES } from '@create-chatbot/shared';
 
 interface RecommendedQuestionsProps {
   onSelectQuestion: (question: string) => void;
 }
-
-const STAGE_QUESTIONS: Record<string, string> = {
-  'C': 'C단계 진단(Check & Context)의 한 줄 정의와 핵심 활동을 알려주세요.',
-  'R': 'R단계 탐색(Research & Resource)에서는 어떤 자료와 교육과정을 준비하나요?',
-  'E1': 'E단계 실행(Execution & Engage)에서 맞춤형 탐구 실행 및 피드백 방법은 무엇인가요?',
-  'A': 'A단계 분석(Analysis & Action)에서 목표 도달 여부에 따른 환류(E 또는 R 복귀) 흐름을 설명해주세요.',
-  'T': 'T단계 전이(Transfer & Think)에서 타 교과 및 실생활 연계는 어떻게 이루어지나요?',
-  'E2': 'E단계 성장(Evolve & Evaluate)의 단원 학습 정리 및 자기성찰 활동을 알려주세요.'
-};
-
-const STAGE_COLORS: Record<string, { badge: string; border: string; bg: string; text: string }> = {
-  'C': { badge: 'bg-[#eaf2ff] text-[#3d65d8]', border: 'hover:border-[#3d65d8]', bg: 'bg-[#f4f7ff]', text: 'text-[#3d65d8]' },
-  'R': { badge: 'bg-[#eef8f2] text-[#248a58]', border: 'hover:border-[#248a58]', bg: 'bg-[#f2faf5]', text: 'text-[#248a58]' },
-  'E1': { badge: 'bg-[#fff4eb] text-[#d4651a]', border: 'hover:border-[#d4651a]', bg: 'bg-[#fff7f0]', text: 'text-[#d4651a]' },
-  'A': { badge: 'bg-[#f5eeff] text-[#703bc9]', border: 'hover:border-[#703bc9]', bg: 'bg-[#f8f3ff]', text: 'text-[#703bc9]' },
-  'T': { badge: 'bg-[#eaf7fa] text-[#1c7e8c]', border: 'hover:border-[#1c7e8c]', bg: 'bg-[#f1fafb]', text: 'text-[#1c7e8c]' },
-  'E2': { badge: 'bg-[#fdf0f5] text-[#b82f63]', border: 'hover:border-[#b82f63]', bg: 'bg-[#fcf3f7]', text: 'text-[#b82f63]' },
-};
 
 const QUESTION_EMOJIS = ['💡', '🧩', '🌱', '📘', '🎨', '📖'];
 const QUESTION_COLORS = [
@@ -32,6 +14,15 @@ const QUESTION_COLORS = [
   'bg-[#f1ecff] text-[#7a59d9]', // lavender
   'bg-[#ffedf3] text-[#cf4876]', // pink
   'bg-[#e6f8fa] text-[#29919c]', // aqua
+];
+
+const STAGE_COLORS = [
+  { border: 'border-[#d0e1fd]', badge: 'bg-[#2b6cb0] text-white', lightBg: 'bg-[#f0f6ff]' }, // C
+  { border: 'border-[#c6f6d5]', badge: 'bg-[#276749] text-white', lightBg: 'bg-[#f0fff4]' }, // R
+  { border: 'border-[#feebc8]', badge: 'bg-[#c05621] text-white', lightBg: 'bg-[#fffaf0]' }, // E
+  { border: 'border-[#e9d8fd]', badge: 'bg-[#6b46c1] text-white', lightBg: 'bg-[#faf5ff]' }, // A (환류)
+  { border: 'border-[#fed7d7]', badge: 'bg-[#9b2c2c] text-white', lightBg: 'bg-[#fff5f5]' }, // T
+  { border: 'border-[#b2f5ea]', badge: 'bg-[#234e52] text-white', lightBg: 'bg-[#e6fffa]' }, // E
 ];
 
 export const RecommendedQuestions: React.FC<RecommendedQuestionsProps> = ({
@@ -64,7 +55,6 @@ export const RecommendedQuestions: React.FC<RecommendedQuestionsProps> = ({
             신뢰할 수 있는 정확한 답변과 PDF 원문 근거를 제공합니다.
           </p>
 
-          {/* 히어로 칩 */}
           <div className="flex items-center justify-center gap-2 flex-wrap text-xs font-extrabold text-[#6d7f9d]">
             <span className="bg-white/90 border border-white rounded-full px-3 py-1 shadow-sm">
               📘 단원 설계
@@ -82,101 +72,147 @@ export const RecommendedQuestions: React.FC<RecommendedQuestionsProps> = ({
         </div>
       </div>
 
-      {/* CREATE 6단계 한눈에 보기 (첨부 공식 이미지 반영) */}
-      <div className="bg-white border border-[#e5ebf5] rounded-[24px] p-5 sm:p-7 mb-8 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-[#edf1f8]">
+      {/* CREATE 6단계 한눈에 보기 & 단계의 흐름: 순차 + 환류 */}
+      <section className="mb-10 bg-white border border-[#e5ebf5] rounded-[26px] p-5 sm:p-7 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-5 border-b border-[#edf1f8] gap-2">
           <div>
             <div className="flex items-center gap-2">
-              <span className="bg-[#e9f0ff] text-[#3e66db] text-xs font-black px-2.5 py-0.5 rounded-full">
-                6단계 한눈에 보기
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-[#eaf1ff] text-[#5570d6]">
+                <Layers className="w-3.5 h-3.5" />
               </span>
-              <span className="text-xs font-bold text-[#8997b0]">
-                순차 진행 + A단계 환류(복귀)
+              <span className="text-[11px] font-black tracking-[1.5px] text-[#8495cb] uppercase">
+                CREATE MODEL FRAMEWORK
               </span>
             </div>
-            <h2 className="text-lg sm:text-xl font-black text-[#2e3e5c] mt-1">
-              CREATE 교수·학습 모형 단계 안내
+            <h2 className="text-lg sm:text-xl font-black text-[#2f3e58] tracking-tight mt-1">
+              6단계 한눈에 보기 <span className="text-xs font-bold text-[#687fe0] ml-1 bg-[#eef3ff] px-2.5 py-0.5 rounded-full">순차 + 환류</span>
             </h2>
           </div>
-          <span className="text-xs text-[#71829e]">
-            각 단계를 클릭하면 AI 도우미에게 즉시 질문할 수 있습니다.
+          <span className="text-xs text-[#71829f] font-medium">
+            💡 카드를 클릭하면 해당 단계의 상세 안내를 바로 질문합니다
           </span>
         </div>
 
-        {/* 6단계 카드 그리드 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-4">
-          {OFFICIAL_CREATE_STAGES.map((stage, idx) => {
-            const stageKey = idx === 2 ? 'E1' : idx === 5 ? 'E2' : stage.code;
-            const colors = STAGE_COLORS[stageKey] || STAGE_COLORS['C'];
-            const question = STAGE_QUESTIONS[stageKey] || `${stage.name} 단계에 대해 알려주세요.`;
+        {/* 6단계 그리드 카드 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-6">
+          {CREATE_STAGES.map((stage, idx) => {
+            const style = STAGE_COLORS[idx % STAGE_COLORS.length];
+            const isFeedbackStage = stage.letter === 'A';
 
             return (
               <button
-                key={`${stage.code}-${idx}`}
+                key={`${stage.letter}-${stage.name}-${idx}`}
                 type="button"
-                onClick={() => onSelectQuestion(question)}
-                className={`group relative text-left p-3.5 rounded-[18px] bg-[#fafbfc] border border-[#e8edf6] ${colors.border} hover:bg-white hover:shadow-md transition-all duration-200 flex flex-col justify-between`}
+                onClick={() =>
+                  onSelectQuestion(
+                    isFeedbackStage
+                      ? `CREATE 모형의 A(분석) 단계 환류 메커니즘과 복귀 규칙에 대해 알려주세요.`
+                      : `CREATE 모형의 ${stage.letter}(${stage.name}) 단계 핵심 활동과 수업 설계 방법을 알려주세요.`
+                  )
+                }
+                className={`text-left p-4 rounded-[18px] border ${style.border} ${style.lightBg} hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between group`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`text-sm font-black w-7 h-7 rounded-lg flex items-center justify-center ${colors.badge}`}>
-                      {stage.code}
-                    </span>
-                    <span className="text-[10px] font-black text-[#8795ad] bg-white border border-[#e7edf6] px-1.5 py-0.5 rounded">
-                      {stage.subTitle}
+                    <div className="flex items-center gap-2">
+                      <span className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm shadow-sm ${style.badge}`}>
+                        {stage.letter}
+                      </span>
+                      <div>
+                        <span className="text-base font-black text-[#28354f] group-hover:text-[#5570d6] transition-colors">
+                          {stage.name}
+                        </span>
+                        <span className="block text-[11px] text-[#718096] font-semibold tracking-tight">
+                          {stage.english}
+                        </span>
+                      </div>
+                    </div>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${isFeedbackStage ? 'bg-purple-100 text-purple-700 font-extrabold animate-pulse' : 'bg-white/80 text-[#596982]'}`}>
+                      {stage.flowRole}
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-black text-[#2b3a58] group-hover:text-[#4168dd] transition-colors">
-                    {stage.name}
-                  </h3>
-                  <p className="text-[10px] font-bold text-[#8695ad] mb-2">
-                    {stage.english}
-                  </p>
-
-                  <p className="text-[11px] font-medium text-[#5c6c86] leading-snug line-clamp-3 mb-2">
-                    {stage.oneLineDef}
+                  <p className="text-xs text-[#42526e] leading-relaxed mb-3 line-clamp-2">
+                    {stage.summary}
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-[#edf1f8] text-[10px] font-black text-[#5e77d9] flex items-center justify-between">
-                  <span>핵심활동 질문</span>
-                  <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                <div className="pt-2.5 border-t border-black/5 flex items-start gap-1.5 text-[11px] text-[#556782]">
+                  <span className="font-extrabold text-[#3a4960] shrink-0">핵심 활동:</span>
+                  <span className="leading-snug text-[#60718d]">{stage.coreActivities}</span>
                 </div>
               </button>
             );
           })}
         </div>
 
-        {/* 단계의 흐름: 순차 + 환류 배너 */}
-        <div className="bg-gradient-to-r from-[#f0f4ff] via-[#f7f9ff] to-[#f4f0ff] border border-[#dce5fb] rounded-[16px] p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
-          <div className="flex items-start sm:items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#4168dd] text-white flex items-center justify-center shrink-0">
-              <RotateCcw className="w-4 h-4" />
+        {/* 단계의 흐름: 순차 + 환류 메커니즘 시각화 */}
+        <div className="bg-[#f8faff] border border-[#e1e9f6] rounded-[20px] p-4 sm:p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#5b73dc] text-white">
+              <RotateCcw className="w-3 h-3" />
+            </span>
+            <h3 className="text-xs sm:text-sm font-black text-[#2d3d57]">
+              단계의 흐름: 순차 + 환류
+            </h3>
+            <span className="text-[11px] text-[#6b7c99]">
+              분석(A) 결과에 따라 전이로 나아가거나, 돌아가서 실행과 분석을 반복합니다
+            </span>
+          </div>
+
+          {/* 단계 순차 배지 플로우 */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs font-bold text-[#3d4d67] mb-3">
+            <div className="bg-white border border-[#d6e2f4] rounded-xl px-3 py-1.5 shadow-xs">
+              <span className="font-black text-[#2b6cb0]">C</span> 진단 <span className="text-[10px] text-[#8696b0]">(출발점)</span>
             </div>
-            <div>
-              <div className="font-black text-[#2f4164] flex items-center gap-1.5 flex-wrap">
-                <span>단계의 흐름: 순차 + 환류</span>
-                <span className="text-[11px] font-extrabold text-[#5368a5] bg-white px-2 py-0.5 rounded-full border border-[#d6e0f7]">
-                  C 진단 ➔ R 탐색 ➔ E 실행 ➔ A 분석 ➔ T 전이 ➔ E 성장
-                </span>
-              </div>
-              <p className="text-[#5a6c8e] text-[11px] mt-0.5">
-                <strong>분석(A)</strong> 결과 목표 도달 시 <strong>전이(T)·성장(E)</strong>으로 진행하며, 이해도가 낮으면 <strong>실행(E)</strong>으로 복귀, 필요하면 <strong>탐색(R)</strong>으로 복귀하여 재설계합니다.
-              </p>
+            <ChevronRight className="w-4 h-4 text-[#9fb0cb] shrink-0" />
+            <div className="bg-white border border-[#d6e2f4] rounded-xl px-3 py-1.5 shadow-xs">
+              <span className="font-black text-[#276749]">R</span> 탐색 <span className="text-[10px] text-[#8696b0]">(자료·질문)</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#9fb0cb] shrink-0" />
+            <div className="bg-white border border-[#d6e2f4] rounded-xl px-3 py-1.5 shadow-xs">
+              <span className="font-black text-[#c05621]">E</span> 실행 <span className="text-[10px] text-[#8696b0]">(맞춤형 탐구)</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#9fb0cb] shrink-0" />
+            <div className="bg-[#f3e8ff] border-2 border-[#9061f9] rounded-xl px-3 py-1.5 shadow-xs text-[#581c87]">
+              <span className="font-black text-[#6b46c1]">A</span> 분석 <span className="text-[10px] font-black text-[#7e22ce]">(목표 도달 판단 ⚡)</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#9fb0cb] shrink-0" />
+            <div className="bg-white border border-[#d6e2f4] rounded-xl px-3 py-1.5 shadow-xs">
+              <span className="font-black text-[#9b2c2c]">T</span> 전이 <span className="text-[10px] text-[#8696b0]">(삶에 적용)</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#9fb0cb] shrink-0" />
+            <div className="bg-white border border-[#d6e2f4] rounded-xl px-3 py-1.5 shadow-xs">
+              <span className="font-black text-[#234e52]">E</span> 성장 <span className="text-[10px] text-[#8696b0]">(정리·성찰)</span>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => onSelectQuestion('A단계 분석에서 환류(되돌아가기) 메커니즘과 복귀 조건에 대해 자세히 설명해 주세요.')}
-            className="shrink-0 self-end md:self-center px-3 py-1.5 bg-white hover:bg-[#eef3ff] text-[#3d65d8] border border-[#ccd8f7] rounded-full font-black text-[11px] transition-colors flex items-center gap-1 shadow-2xs"
-          >
-            <span>환류 메커니즘 질문하기</span>
-            <ArrowRight className="w-3 h-3" />
-          </button>
+          {/* 환류(A) 분기 안내 */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3 border-t border-[#e5ecf7] text-[11px]">
+            <div className="bg-white/90 border border-green-200 rounded-xl p-2.5 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+              <div>
+                <strong className="text-emerald-800">목표 도달 시:</strong>
+                <span className="text-slate-600 ml-1">T(전이) ➔ E(성장)으로 진행</span>
+              </div>
+            </div>
+            <div className="bg-white/90 border border-amber-200 rounded-xl p-2.5 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+              <div>
+                <strong className="text-amber-800">이해도 낮을 시:</strong>
+                <span className="text-slate-600 ml-1">E(실행)로 복귀 (다시 실행)</span>
+              </div>
+            </div>
+            <div className="bg-white/90 border border-indigo-200 rounded-xl p-2.5 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0"></span>
+              <div>
+                <strong className="text-indigo-800">필요 시 재설계:</strong>
+                <span className="text-slate-600 ml-1">R(탐색)로 복귀 (재설계 후 실행)</span>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* 추천 질문 타이틀 */}
       <div className="flex items-center justify-between mb-4 px-1">
