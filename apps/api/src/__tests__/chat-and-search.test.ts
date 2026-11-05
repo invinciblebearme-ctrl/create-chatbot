@@ -8,7 +8,7 @@ describe('Search and AI Answering Tests', () => {
     {
       id: 'chunk-1',
       document_id: 'doc-sample-1',
-      document_title: 'CREATE 교수·학습 모형 기본 안내서',
+      document_title: 'CREATE 수업설계 모형 길잡이',
       category: 'CREATE 모형 안내',
       grade: '공통',
       subject: '융합/통합',
@@ -21,7 +21,7 @@ describe('Search and AI Answering Tests', () => {
 
   it('자료 검색 폴백 답변 생성: 출처 제목과 쪽수 포함 확인', () => {
     const answer = generateSearchFallbackAnswer(mockSearchResults);
-    expect(answer).toContain('CREATE 교수·학습 모형 기본 안내서');
+    expect(answer).toContain('CREATE 수업설계 모형 길잡이');
     expect(answer).toContain('p.1');
     expect(answer).toContain('학습자 주도형 모델');
   });

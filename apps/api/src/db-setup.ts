@@ -3,6 +3,7 @@
  */
 
 import { Env } from './env';
+import { SEED_DATA_SQL } from './init-sql';
 
 export async function runDatabaseSetup(env: Env): Promise<{ success: boolean; errors: string[]; docsCount: number }> {
   const errors: string[] = [];
@@ -80,42 +81,49 @@ export async function runDatabaseSetup(env: Env): Promise<{ success: boolean; er
     errors.push(`FTS5: ${e.message}`);
   }
 
-  // 2. 현재 등록된 문서 수 확인
-  let count = 0;
+  // 2. 기존 샘플 데이터가 있으면 정리
   try {
-    const res = await env.DB.prepare("SELECT count(*) as cnt FROM documents").first<{ cnt: number }>();
-    count = res?.cnt || 0;
+    const hasSample = await env.DB.prepare("SELECT count(*) as cnt FROM documents WHERE id LIKE 'doc-sample%'").first<{ cnt: number }>();
+    if (hasSample && hasSample.cnt > 0) {
+      await env.DB.prepare("DELETE FROM document_chunks WHERE document_id LIKE 'doc-sample%'").run();
+      await env.DB.prepare("DELETE FROM documents WHERE id LIKE 'doc-sample%'").run();
+      await env.DB.prepare("DELETE FROM faq WHERE source_document_id LIKE 'doc-sample%'").run();
+    }
+  } catch (e: any) {
+    errors.push(`CleanupSample: ${e.message}`);
+  }
+
+  // 3. 현재 등록된 공식 길잡이 문서 유무 확인
+  let guideCount = 0;
+  try {
+    const res = await env.DB.prepare("SELECT count(*) as cnt FROM documents WHERE id = 'doc-guide-manual'").first<{ cnt: number }>();
+    guideCount = res?.cnt || 0;
   } catch (e: any) {
     errors.push(`Count: ${e.message}`);
   }
 
-  // 3. 문서가 없으면 초기 시드 데이터 등록
-  if (count === 0) {
-    const docInserts = [
-      `INSERT OR IGNORE INTO documents (id, title, description, category, grade, subject, tags, r2_key, page_count, status, is_public) VALUES ('doc-sample-create-guide', 'CREATE 교수·학습 모형 기본 안내서', '초등학교 연구학교 CREATE 모형의 개념, 6단계 구성, 교수학습 활동 및 수업 설계 원칙을 안내하는 기초 매뉴얼입니다.', 'CREATE 모형 안내', '공통', '융합/통합', '["CREATE모형", "개념", "단계별활동", "유의사항", "연구학교"]', 'sample_create_guide.pdf', 5, 'COMPLETED', 1)`,
-      `INSERT OR IGNORE INTO documents (id, title, description, category, grade, subject, tags, r2_key, page_count, status, is_public) VALUES ('doc-sample-grade5-design', '5학년 과학·실과 융합 CREATE 단원설계안', '5학년 태양계와 지구 및 지속가능한 에너지 기술을 주제로 한 CREATE 모형 기반 단원설계안입니다.', '학년별 단원설계안', '5학년', '과학', '["단원설계안", "5학년", "과학", "에너지", "실과"]', 'sample_grade5_design.pdf', 8, 'COMPLETED', 1)`,
-      `INSERT OR IGNORE INTO documents (id, title, description, category, grade, subject, tags, r2_key, page_count, status, is_public) VALUES ('doc-sample-grade6-lesson', '6학년 사회과 CREATE 실증수업 지도안', '6학년 우리나라의 민주정치 단원에 CREATE 모형을 적용한 실제 실증수업 지도안 및 평가계획입니다.', '실증수업 지도안', '6학년', '사회', '["실증수업", "지도안", "6학년", "사회", "민주정치"]', 'sample_grade6_lesson.pdf', 6, 'COMPLETED', 1)`
-    ];
-    for (const sql of docInserts) {
-      try {
-        await env.DB.prepare(sql).run();
-      } catch (e: any) {
-        errors.push(`DocInsert: ${e.message}`);
-      }
-    }
+  // 4. 공식 실제 자료가 없으면 SEED_DATA_SQL 실행
+  if (guideCount === 0) {
+    try {
+      // SEED_DATA_SQL 문장 분할 실행
+      const statements = SEED_DATA_SQL
+        .split(/;\s*[\r\n]+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0 && !s.startsWith('--'));
 
-    const chunkInserts = [
-      `INSERT OR IGNORE INTO document_chunks (id, document_id, page_number, chunk_index, content, search_text) VALUES ('chunk-guide-p1-1', 'doc-sample-create-guide', 1, 0, '1. CREATE 교수·학습 모형이란 무엇인가요? CREATE 모형은 미래 핵심역량 함양을 위해 초등학교 연구학교에서 개발된 학습자 주도형 탐구·창작 교수·학습 모델입니다. 학생들이 실제 삶의 문제와 맥락에서 출발하여 주도적으로 질문하고 협력적으로 문제를 해결하며 산출물을 창조하고 공유하는 전 과정을 구조화한 것입니다. 본 모형은 C(연결/도전), R(탐구/연구), E(체험/실험), A(적용/제작), T(변형/심화), E(성찰/평가)의 체계적인 흐름을 가집니다. [출처: CREATE 모형 기본 안내서 1쪽]', '1 create 교수 학습 모형이란 무엇인가요 create 모형은 미래 핵심역량 함양을 위해 초등학교 연구학교에서 개발된 학습자 주도형 탐구 창작 교수 학습 모델입니다 학생 삶 문제 맥락 질문 협력 산출물 창조 공유 구조화 c 연결 도전 r 탐구 연구 e 체험 실험 a 적용 제작 t 변형 심화 e 성찰 평가 체계적 흐름')`,
-      `INSERT OR IGNORE INTO document_chunks (id, document_id, page_number, chunk_index, content, search_text) VALUES ('chunk-guide-p2-1', 'doc-sample-create-guide', 2, 0, '2. CREATE 모형은 어떤 단계로 구성되나요? CREATE 모형은 다음의 6가지 핵심 단계로 구성됩니다: 1단계 C (Connect & Challenge): 실생활 문제 발견 및 학습 동기 연결, 도전 과제 설정 / 2단계 R (Research & Reason): 관련 정보 수집, 원리 탐구, 자료 분석 및 추론 / 3단계 E (Explore & Experiment): 다양한 아이디어 발상 및 가설 검증, 실험적 탐색 / 4단계 A (Apply & Act): 아이디어의 구체화, 산출물 제작 및 프로젝트 실제 적용 / 5단계 T (Transform & Think): 피드백 수용, 산출물 변형·개선, 비판적·확장적 사고 / 6단계 E (Evaluate & Extend): 과정 및 결과 성찰, 동료 평가, 배움의 일상화 및 확장. 각 단계는 선형적인 진행에 국한되지 않고 학습자의 탐구 흐름에 따라 순환적으로 연계될 수 있습니다. [출처: CREATE 모형 기본 안내서 2쪽]', '2 create 모형은 어떤 단계로 구성되나요 create 모형 6가지 핵심 단계 1단계 c connect challenge 실생활 문제 발견 학습 동기 연결 도전 과제 2단계 r research reason 관련 정보 수집 원리 탐구 자료 분석 추론 3단계 e explore experiment 아이디어 발상 가설 검증 실험적 탐색 4단계 a apply act 구체화 산출물 제작 프로젝트 실제 적용 5단계 t transform think 피드백 산출물 변형 개선 비판적 확장적 사고 6단계 e evaluate extend 과정 결과 성찰 동료 평가 배움 일상화 확장 순환적')`,
-      `INSERT OR IGNORE INTO document_chunks (id, document_id, page_number, chunk_index, content, search_text) VALUES ('chunk-guide-p3-1', 'doc-sample-create-guide', 3, 0, '3. 단계별 주요 교수·학습 활동 안내: C단계(도전 연결): 일상 속 상황 영상 시청, 학생 질문 만들기, 핵심 탐구 질문 도출 / R단계(탐구 조사): 디지털 기기 및 도서를 활용한 정보 검색, 전문가 인터뷰, 데이터 수집 및 분류 / E단계(체험 실험): 모둠별 브레인스토밍, 프로토타입 구상, 사전 시뮬레이션 및 테스트 / A단계(적용 제작): 협력적 산출물 제작(디지털 콘텐츠, 발명품, 보고서, 캠페인 등) / T단계(변형 심화): 갤러리 워크를 통한 피드백 주고받기, 문제점 수정 및 기능 고도화 / E단계(평가 확장): 자기평가·동료평가 루브릭 작성, 학급 공유회, 일상생활 실천 다짐 [출처: CREATE 모형 기본 안내서 3쪽]', '3 단계별 주요 교수 학습 활동 안내 c단계 도전 연결 일상 상황 영상 학생 질문 핵심 탐구 질문 도출 r단계 탐구 조사 디지털 기기 도서 정보 검색 인터뷰 데이터 수집 분류 e단계 체험 실험 모둠 브레인스토밍 프로토타입 구상 시뮬레이션 테스트 a단계 적용 제작 협력 산출물 디지털 콘텐츠 발명품 보고서 캠페인 t단계 변형 심화 갤러리 워크 피드백 문제점 수정 기능 고도화 e단계 평가 확장 자기평가 동료평가 루브릭 학급 공유회 일상생활 실천')`,
-      `INSERT OR IGNORE INTO document_chunks (id, document_id, page_number, chunk_index, content, search_text) VALUES ('chunk-guide-p5-1', 'doc-sample-create-guide', 5, 0, '4. CREATE 모형 적용 수업 설계 시 유의할 점: 1) 교사 주도의 강의를 최소화하고 학생의 주도적 질문과 탐구 시간을 충분히 확보해야 합니다. 2) 모든 단계를 기계적으로 순차 적용하기보다 단원의 성취기준과 학생 발달 단계에 맞게 유연하게 재구성할 수 있습니다. 3) T(변형/심화) 단계의 피드백 과정을 생략하지 말고 동료 간 성장을 지원하는 안전한 학급 문화를 조성해야 합니다. 4) 결과물 중심의 평가를 지양하고 전 과정에서 과정중심평가와 배움 기록을 누적합니다. 5) 디지털 도구는 목적이 아닌 문제해결을 촉진하는 도구로 적절하게 배치해야 합니다. [출처: CREATE 모형 기본 안내서 5쪽]', '4 create 모형 적용 수업 설계 시 유의할 점 1 교사 주도 강의 최소화 학생 주도 질문 탐구 시간 충분히 확보 2 성취기준 학생 발달 단계 유연 재구성 3 t 변형 심화 피드백 생략 안전한 학급 문화 조성 4 결과물 중심 지양 과정중심평가 배움 기록 5 디지털 도구 목적 문제해결 촉진 도구')`
-    ];
-    for (const sql of chunkInserts) {
-      try {
-        await env.DB.prepare(sql).run();
-      } catch (e: any) {
-        errors.push(`ChunkInsert: ${e.message}`);
+      for (const statement of statements) {
+        if (!statement) continue;
+        try {
+          await env.DB.prepare(statement).run();
+        } catch (stmtErr: any) {
+          // 중복 키나 이미 존재하는 경우 무시
+          if (!stmtErr.message?.includes('UNIQUE constraint failed')) {
+            errors.push(`SeedStmt: ${stmtErr.message}`);
+          }
+        }
       }
+    } catch (seedErr: any) {
+      errors.push(`SeedData: ${seedErr.message}`);
     }
 
     // FTS 동기화
@@ -125,11 +133,11 @@ export async function runDatabaseSetup(env: Env): Promise<{ success: boolean; er
       errors.push(`FTSSync: ${e.message}`);
     }
 
-    // FAQ 등록
+    // 공식 연구학교 FAQ 등록 (진단–탐색–실행–분석–전이–성장 100% 일치)
     const faqInserts = [
-      `INSERT OR IGNORE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-1', 'CREATE 모형이란 무엇인가요?', 'CREATE 모형은 초등학교 연구학교에서 개발된 학습자 주도형 탐구·창작 교수·학습 모델입니다. 학생들의 삶의 문제에서 출발하여 C(연결/도전), R(탐구/연구), E(체험/실험), A(적용/제작), T(변형/심화), E(성찰/평가)의 6단계를 거치며 핵심역량을 기르도록 돕습니다.', 'CREATE 모형 안내', 'doc-sample-create-guide', 1, 1)`,
-      `INSERT OR IGNORE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-2', 'CREATE 모형은 어떤 단계로 구성되나요?', 'CREATE 모형은 6가지 단계로 구성됩니다: 1단계 C(Connect & Challenge), 2단계 R(Research & Reason), 3단계 E(Explore & Experiment), 4단계 A(Apply & Act), 5단계 T(Transform & Think), 6단계 E(Evaluate & Extend)입니다.', 'CREATE 모형 안내', 'doc-sample-create-guide', 2, 1)`,
-      `INSERT OR IGNORE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-3', '수업 설계 시 유의할 점은 무엇인가요?', '1) 교사 중심 수업을 지양하고 학생의 탐구 시간을 충분히 확보해야 합니다. 2) 모든 단계를 무조건 기계적으로 적용하지 않고 성취기준에 맞게 유연하게 구성합니다. 3) T단계 피드백과 E단계 과정평가를 내실 있게 운영해야 합니다.', 'CREATE 모형 안내', 'doc-sample-create-guide', 5, 1)`
+      `INSERT OR REPLACE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-1', 'CREATE 모형이란 무엇인가요?', 'CREATE 모형은 학생의 주도성과 맞춤형 학습을 위해 초등학교 연구학교에서 개발된 AI·디지털 연계 교수·학습 모델입니다. C(진단 Check & Context), R(탐색 Research & Resource), E(실행 Engage & Experience), A(분석 Analyze & Assess), T(전이 Transfer & Transform), E(성장 Evaluate & Extend)의 6단계를 통해 삶과 연계된 깊이 있는 배움을 구현합니다.', 'CREATE 모형 안내', 'doc-guide-manual', 1, 1)`,
+      `INSERT OR REPLACE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-2', 'CREATE 모형은 어떤 단계로 구성되나요?', 'CREATE 모형의 6단계는 다음과 같습니다: 1단계 C(진단 Check & Context) - 학습자 특성 파악 및 출발점 설정 / 2단계 R(탐색 Research & Resource) - 자료 선정 및 탐구 질문 설정 / 3단계 E(실행 Engage & Experience) - 능동적 몰입 및 핵심 개념 탐구 / 4단계 A(분석 Analyze & Assess) - 데이터 분석 및 형성 피드백 / 5단계 T(전이 Transfer & Transform) - 실생활 문제 해결 및 산출물 변형·개선 / 6단계 E(성장 Evaluate & Extend) - 과정 성찰 및 배움의 확장입니다.', 'CREATE 모형 안내', 'doc-guide-manual', 3, 1)`,
+      `INSERT OR REPLACE INTO faq (id, question, answer, category, source_document_id, source_page, is_active) VALUES ('faq-3', '수업 설계 시 유의할 점은 무엇인가요?', '1) AI·디지털 도구는 목적이 아닌 문제해결을 위한 수단으로 적재적소에 활용해야 합니다. 2) 6단계를 기계적으로 순차 적용하지 않고 단원 성취기준과 학생 발달 단계에 맞게 유연하게 재구성합니다. 3) T(전이) 단계의 피드백 및 E(성장) 단계의 과정중심평가를 내실 있게 운영해야 합니다.', 'CREATE 모형 안내', 'doc-guide-manual', 2, 1)`
     ];
     for (const sql of faqInserts) {
       try {

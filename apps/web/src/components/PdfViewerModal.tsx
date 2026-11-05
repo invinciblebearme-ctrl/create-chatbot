@@ -60,6 +60,25 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
     setCurrentPage(initialPageNumber || 1);
   }, [initialPageNumber]);
 
+const DOC_STATIC_FILE_MAP: Record<string, string> = {
+  'doc-guide-manual': 'CREATE 수업설계 모형 길잡이.pdf',
+  'doc-design-grade1': 'CREATE모형 단원설계안(1학년).pdf',
+  'doc-design-grade2': 'CREATE모형 단원설계안(2학년).pdf',
+  'doc-design-grade3': 'CREATE모형 단원설계안(3학년).pdf',
+  'doc-design-grade4': 'CREATE모형 단원설계안(4학년).pdf',
+  'doc-design-grade5': 'CREATE모형 단원설계안(5학년).pdf',
+  'doc-design-grade6': 'CREATE모형 단원설계안(6학년).pdf',
+  'doc-lesson-sci-5': 'CREATE모형 수업지도안(과학)(5학년).pdf',
+  'doc-lesson-sci-6': 'CREATE모형 수업지도안(과학)(6학년).pdf',
+  'doc-lesson-eng-4': 'CREATE모형 수업지도안(영어)(4학년).pdf',
+  'doc-lesson-eng-5': 'CREATE모형 수업지도안(영어)(5학년).pdf',
+  'doc-lesson-eng-6': 'CREATE모형 수업지도안(영어)(6학년).pdf',
+  'doc-lesson-pe-4': 'CREATE모형 수업지도안(체육)(4학년).pdf',
+  'doc-lesson-pe-6': 'CREATE모형 수업지도안(체육)(6학년).pdf',
+  'doc-lesson-health-5': 'CREATE모형 수업지도안(보건)(5학년).pdf',
+  'doc-lesson-int-2': 'CREATE모형 수업지도안(통합)(2학년).pdf'
+};
+
   // 1. PDF 문서 바이너리 로드
   useEffect(() => {
     if (!isOpen || !docId) {
@@ -71,7 +90,11 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
     setLoadingPdf(true);
     setRenderError(null);
 
-    const fileUrl = `/chatbot/api/documents/${docId}/file`;
+    // 16개 공식 자료는 public/resources 경로 우선 로드, 그 외는 API 호출
+    const staticName = DOC_STATIC_FILE_MAP[docId];
+    const fileUrl = staticName
+      ? `/chatbot/resources/${encodeURIComponent(staticName)}`
+      : `/chatbot/api/documents/${docId}/file`;
 
     const loadingTask = pdfjsLib.getDocument({
       url: fileUrl,
