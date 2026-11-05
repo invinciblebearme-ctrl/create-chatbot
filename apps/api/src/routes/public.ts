@@ -39,7 +39,21 @@ export async function ensureDatabase(env: Env): Promise<void> {
       return;
     }
 
-    // 공식 연구학교 자료가 적재되어 있는지 확인
+    // 1. 기존 잔여 샘플 데이터가 있으면 전면 삭제 후 공식 데이터 적재
+    const sampleCheck = await env.DB.prepare("SELECT count(*) as cnt FROM documents WHERE id LIKE 'doc-sample%' OR title LIKE '%테스트용%'").first<{ cnt: number }>();
+    if (sampleCheck && sampleCheck.cnt > 0) {
+      console.log('Old sample documents found in D1. Purging and reseeding...');
+      try {
+        await env.DB.prepare("DELETE FROM document_chunks WHERE document_id LIKE 'doc-sample%'").run();
+        await env.DB.prepare("DELETE FROM documents WHERE id LIKE 'doc-sample%' OR title LIKE '%테스트용%'").run();
+        await env.DB.prepare("DELETE FROM faq WHERE source_document_id LIKE 'doc-sample%'").run();
+      } catch {}
+      await runDatabaseSetup(env);
+      isDbInitialized = true;
+      return;
+    }
+
+    // 2. 공식 연구학교 자료(doc-guide-manual) 적재 여부 확인
     const guideCheck = await env.DB.prepare("SELECT count(*) as cnt FROM documents WHERE id = 'doc-guide-manual'").first<{ cnt: number }>();
     if (!guideCheck || guideCheck.cnt === 0) {
       console.log('D1 documents table exists but official seed data missing. Initializing seed data...');
@@ -136,15 +150,45 @@ export async function handleChat(request: Request, env: Env): Promise<Response> 
     // 1. D1에서 관련 공식 자료 검색
     const searchResults = await searchDocumentsAndChunks(env.DB, userMessage, body.filter, 5);
 
+    const staticMap: Record<string, string> = {
+      'doc-guide-manual': 'CREATE 수업설계 모형 길잡이.pdf',
+      'doc-design-grade1': 'CREATE모형 단원설계안(1학년).pdf',
+      'doc-design-grade2': 'CREATE모형 단원설계안(2학년).pdf',
+      'doc-design-grade3': 'CREATE모형 단원설계안(3학년).pdf',
+      'doc-design-grade4': 'CREATE모형 단원설계안(4학년).pdf',
+      'doc-design-grade5': 'CREATE모형 단원설계안(5학년).pdf',
+      'doc-design-grade6': 'CREATE모형 단원설계안(6학년).pdf',
+      'doc-lesson-sci-5': 'CREATE모형 수업지도안(과학)(5학년).pdf',
+      'doc-lesson-sci-6': 'CREATE모형 수업지도안(과학)(6학년).pdf',
+      'doc-lesson-eng-4': 'CREATE모형 수업지도안(영어)(4학년).pdf',
+      'doc-lesson-eng-5': 'CREATE모형 수업지도안(영어)(5학년).pdf',
+      'doc-lesson-eng-6': 'CREATE모형 수업지도안(영어)(6학년).pdf',
+      'doc-lesson-pe-4': 'CREATE모형 수업지도안(체육)(4학년).pdf',
+      'doc-lesson-pe-6': 'CREATE모형 수업지도안(체육)(6학년).pdf',
+      'doc-lesson-health-5': 'CREATE모형 수업지도안(보건)(5학년).pdf',
+      'doc-lesson-int-2': 'CREATE모형 수업지도안(통합)(2학년).pdf'
+    };
+
     // 출처 목록 구성 (서버 검증 출처만 전달)
-    const citations: Citation[] = searchResults.map(r => ({
-      document_id: r.document_id,
-      document_title: r.document_title,
-      category: r.category,
-      page_number: r.page_number,
-      excerpt: r.content.slice(0, 150) + (r.content.length > 150 ? '...' : ''),
-      file_url: `/chatbot/api/documents/${r.document_id}/file`
-    }));
+    const citations: Citation[] = searchResults.map(r => {
+      const cleanTitle = r.document_title
+        .replace(/\[\s*테스트용\s*샘플(?:\s*데이터)?\s*\]\s*/gi, '')
+        .replace(/테스트용\s*샘플(?:\s*데이터)?/gi, '')
+        .trim();
+      const staticFilename = staticMap[r.document_id];
+      const directFileUrl = staticFilename
+        ? `/chatbot/resources/${encodeURIComponent(staticFilename)}`
+        : `/chatbot/api/documents/${r.document_id}/file`;
+
+      return {
+        document_id: r.document_id,
+        document_title: cleanTitle,
+        category: r.category,
+        page_number: r.page_number,
+        excerpt: r.content.slice(0, 150) + (r.content.length > 150 ? '...' : ''),
+        file_url: directFileUrl
+      };
+    });
 
     // 2. 모드별 분기 처리
     let answerText = '';
@@ -274,27 +318,40 @@ export async function handleGetDocumentFile(request: Request, env: Env, docId: s
       bodyData = object.body;
       etag = object.httpEtag;
     } else {
-      // R2에 실제 PDF 파일이 아직 등록되지 않은 경우 (샘플 데이터 및 초기 상태)
-      // 표준 5페이지 샘플 PDF 바이너리를 동적으로 생성하여 뷰어에 제공
+      // 16개 공식 연구학교 자료인 경우 정적 리소스 경로로 리다이렉트
+      const staticMap: Record<string, string> = {
+        'doc-guide-manual': 'CREATE 수업설계 모형 길잡이.pdf',
+        'doc-design-grade1': 'CREATE모형 단원설계안(1학년).pdf',
+        'doc-design-grade2': 'CREATE모형 단원설계안(2학년).pdf',
+        'doc-design-grade3': 'CREATE모형 단원설계안(3학년).pdf',
+        'doc-design-grade4': 'CREATE모형 단원설계안(4학년).pdf',
+        'doc-design-grade5': 'CREATE모형 단원설계안(5학년).pdf',
+        'doc-design-grade6': 'CREATE모형 단원설계안(6학년).pdf',
+        'doc-lesson-sci-5': 'CREATE모형 수업지도안(과학)(5학년).pdf',
+        'doc-lesson-sci-6': 'CREATE모형 수업지도안(과학)(6학년).pdf',
+        'doc-lesson-eng-4': 'CREATE모형 수업지도안(영어)(4학년).pdf',
+        'doc-lesson-eng-5': 'CREATE모형 수업지도안(영어)(5학년).pdf',
+        'doc-lesson-eng-6': 'CREATE모형 수업지도안(영어)(6학년).pdf',
+        'doc-lesson-pe-4': 'CREATE모형 수업지도안(체육)(4학년).pdf',
+        'doc-lesson-pe-6': 'CREATE모형 수업지도안(체육)(6학년).pdf',
+        'doc-lesson-health-5': 'CREATE모형 수업지도안(보건)(5학년).pdf',
+        'doc-lesson-int-2': 'CREATE모형 수업지도안(통합)(2학년).pdf'
+      };
+
+      const staticFilename = staticMap[docId] || (doc.r2_key.endsWith('.pdf') ? doc.r2_key : null);
+      if (staticFilename) {
+        return Response.redirect(new URL(`/chatbot/resources/${encodeURIComponent(staticFilename)}`, request.url).toString(), 302);
+      }
+
+      // R2 및 정적 리소스 모두 없는 경우 생성본 스트리밍
       const samplePdfBytes = await generateSamplePdf(doc.title, doc.page_count || 5);
       bodyData = samplePdfBytes;
-      // R2 바인딩이 있으면 캐싱 저장
-      if (env.DOCS_BUCKET) {
-        try {
-          await env.DOCS_BUCKET.put(doc.r2_key, samplePdfBytes, {
-            httpMetadata: { contentType: 'application/pdf' }
-          });
-        } catch (e) {
-          console.warn('Failed to cache sample PDF in R2:', e);
-        }
-      }
     }
 
     const headers = new Headers();
     headers.set('etag', etag);
     headers.set('Content-Type', 'application/pdf');
     headers.set('Content-Disposition', `inline; filename="${encodeURIComponent(doc.title)}.pdf"`);
-    // Cloudflare Edge CDN에 7일간 캐시 (R2 읽기 요청 0회로 최적화하여 100% 무료 보장)
     headers.set('Cache-Control', 'public, max-age=86400, s-maxage=604800');
 
     return new Response(bodyData, { headers });

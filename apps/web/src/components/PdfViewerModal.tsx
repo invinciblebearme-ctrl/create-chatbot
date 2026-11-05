@@ -17,8 +17,10 @@ import {
 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// PDF.js 워커 세팅
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// PDF.js 로컬 워커 세팅 (외부 CDN 의존성 제거로 학교망 방화벽/버전 불일치 완전 차단)
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/chatbot/pdf.worker.min.js';
+}
 
 interface PdfViewerModalProps {
   isOpen: boolean;
@@ -32,6 +34,62 @@ interface ChunkItem {
   page_number: number;
   chunk_index: number;
   content: string;
+}
+
+export const DOC_STATIC_FILE_MAP: Record<string, string> = {
+  'doc-guide-manual': 'CREATE 수업설계 모형 길잡이.pdf',
+  'doc-design-grade1': 'CREATE모형 단원설계안(1학년).pdf',
+  'doc-design-grade2': 'CREATE모형 단원설계안(2학년).pdf',
+  'doc-design-grade3': 'CREATE모형 단원설계안(3학년).pdf',
+  'doc-design-grade4': 'CREATE모형 단원설계안(4학년).pdf',
+  'doc-design-grade5': 'CREATE모형 단원설계안(5학년).pdf',
+  'doc-design-grade6': 'CREATE모형 단원설계안(6학년).pdf',
+  'doc-lesson-sci-5': 'CREATE모형 수업지도안(과학)(5학년).pdf',
+  'doc-lesson-sci-6': 'CREATE모형 수업지도안(과학)(6학년).pdf',
+  'doc-lesson-eng-4': 'CREATE모형 수업지도안(영어)(4학년).pdf',
+  'doc-lesson-eng-5': 'CREATE모형 수업지도안(영어)(5학년).pdf',
+  'doc-lesson-eng-6': 'CREATE모형 수업지도안(영어)(6학년).pdf',
+  'doc-lesson-pe-4': 'CREATE모형 수업지도안(체육)(4학년).pdf',
+  'doc-lesson-pe-6': 'CREATE모형 수업지도안(체육)(6학년).pdf',
+  'doc-lesson-health-5': 'CREATE모형 수업지도안(보건)(5학년).pdf',
+  'doc-lesson-int-2': 'CREATE모형 수업지도안(통합)(2학년).pdf'
+};
+
+export function resolvePdfFileUrl(docId: string | null, title?: string): string {
+  if (docId && DOC_STATIC_FILE_MAP[docId]) {
+    return `/chatbot/resources/${encodeURIComponent(DOC_STATIC_FILE_MAP[docId])}`;
+  }
+
+  const t = (title || '').replace(/\s+/g, '');
+  if (t.includes('길잡이') || t.includes('기본매뉴얼') || t.includes('모형안내')) {
+    return `/chatbot/resources/${encodeURIComponent('CREATE 수업설계 모형 길잡이.pdf')}`;
+  }
+  if (t.includes('1학년')) return `/chatbot/resources/${encodeURIComponent('CREATE모형 단원설계안(1학년).pdf')}`;
+  if (t.includes('2학년') && (t.includes('통합') || t.includes('단원설계'))) return `/chatbot/resources/${encodeURIComponent('CREATE모형 단원설계안(2학년).pdf')}`;
+  if (t.includes('3학년')) return `/chatbot/resources/${encodeURIComponent('CREATE모형 단원설계안(3학년).pdf')}`;
+  if (t.includes('4학년') && t.includes('과학')) return `/chatbot/resources/${encodeURIComponent('CREATE모형 단원설계안(4학년).pdf')}`;
+  if (t.includes('4학년') && t.includes('영어')) return `/chatbot/resources/${encodeURIComponent('CREATE모형 수업지도안(영어)(4학년).pdf')}`;
+  if (t.includes('4학년') && t.includes('체육')) return `/chatbot/resources/${encodeURIComponent('CREATE모형 수업지도안(체육)(4학년).pdf')}`;
+  if (t.includes('5학년') && t.includes('사회')) return `/chatbot/resources/${encodeURIComponent('CREATE모형 단원설계안(5학년).pdf')}`;
+  if (t.includes('5학년') && t.includes('과학')) return `/chatbot/resources/${encodeURIComponent('CREATE모형 수업지도안(과학)(5학년).pdf')}`;
+  if (t.includes('5학년') && t.includes('영어')) return `/chatbot/resources/${encodeURIComponent('CREATE모형 수업지도안(영어)(5학년).pdf')}`;
+  if (t.includes('5학년') && t.includes('보건')) return `/chatbot/resources/${encodeURIComponent('CREATE모형 수업지도안(보건)(5학년).pdf')}`;
+  if (t.includes('6학년') && (t.includes('사회') || t.includes('단원설계') || t.includes('실증수업'))) {
+    return `/chatbot/resources/${encodeURIComponent('CREATE모형 단원설계안(6학년).pdf')}`;
+  }
+  if (t.includes('6학년') && t.includes('과학')) return `/chatbot/resources/${encodeURIComponent('CREATE모형 수업지도안(과학)(6학년).pdf')}`;
+  if (t.includes('6학년') && t.includes('영어')) return `/chatbot/resources/${encodeURIComponent('CREATE모형 수업지도안(영어)(6학년).pdf')}`;
+  if (t.includes('6학년') && t.includes('체육')) return `/chatbot/resources/${encodeURIComponent('CREATE모형 수업지도안(체육)(6학년).pdf')}`;
+
+  return docId ? `/chatbot/api/documents/${docId}/file` : '';
+}
+
+function cleanTitle(t: string): string {
+  if (!t) return '';
+  return t
+    .replace(/\[\s*테스트용\s*샘플(?:\s*데이터)?\s*\]\s*/gi, '')
+    .replace(/테스트용\s*샘플(?:\s*데이터)?/gi, '')
+    .trim();
 }
 
 export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
@@ -60,28 +118,11 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
     setCurrentPage(initialPageNumber || 1);
   }, [initialPageNumber]);
 
-const DOC_STATIC_FILE_MAP: Record<string, string> = {
-  'doc-guide-manual': 'CREATE 수업설계 모형 길잡이.pdf',
-  'doc-design-grade1': 'CREATE모형 단원설계안(1학년).pdf',
-  'doc-design-grade2': 'CREATE모형 단원설계안(2학년).pdf',
-  'doc-design-grade3': 'CREATE모형 단원설계안(3학년).pdf',
-  'doc-design-grade4': 'CREATE모형 단원설계안(4학년).pdf',
-  'doc-design-grade5': 'CREATE모형 단원설계안(5학년).pdf',
-  'doc-design-grade6': 'CREATE모형 단원설계안(6학년).pdf',
-  'doc-lesson-sci-5': 'CREATE모형 수업지도안(과학)(5학년).pdf',
-  'doc-lesson-sci-6': 'CREATE모형 수업지도안(과학)(6학년).pdf',
-  'doc-lesson-eng-4': 'CREATE모형 수업지도안(영어)(4학년).pdf',
-  'doc-lesson-eng-5': 'CREATE모형 수업지도안(영어)(5학년).pdf',
-  'doc-lesson-eng-6': 'CREATE모형 수업지도안(영어)(6학년).pdf',
-  'doc-lesson-pe-4': 'CREATE모형 수업지도안(체육)(4학년).pdf',
-  'doc-lesson-pe-6': 'CREATE모형 수업지도안(체육)(6학년).pdf',
-  'doc-lesson-health-5': 'CREATE모형 수업지도안(보건)(5학년).pdf',
-  'doc-lesson-int-2': 'CREATE모형 수업지도안(통합)(2학년).pdf'
-};
+  const targetPdfUrl = resolvePdfFileUrl(docId, title);
 
   // 1. PDF 문서 바이너리 로드
   useEffect(() => {
-    if (!isOpen || !docId) {
+    if (!isOpen || !targetPdfUrl) {
       pdfDocRef.current = null;
       return;
     }
@@ -90,15 +131,8 @@ const DOC_STATIC_FILE_MAP: Record<string, string> = {
     setLoadingPdf(true);
     setRenderError(null);
 
-    // 16개 공식 자료는 public/resources 경로 우선 로드, 그 외는 API 호출
-    const staticName = DOC_STATIC_FILE_MAP[docId];
-    const fileUrl = staticName
-      ? `/chatbot/resources/${encodeURIComponent(staticName)}`
-      : `/chatbot/api/documents/${docId}/file`;
-
     const loadingTask = pdfjsLib.getDocument({
-      url: fileUrl,
-      cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/cmaps/`,
+      url: targetPdfUrl,
       cMapPacked: true
     });
 
@@ -123,7 +157,7 @@ const DOC_STATIC_FILE_MAP: Record<string, string> = {
         loadingTask.destroy();
       } catch {}
     };
-  }, [isOpen, docId]);
+  }, [isOpen, targetPdfUrl]);
 
   // 2. 현재 페이지를 HTML5 Canvas에 직접 렌더링 (다운로드 없이 웹 화면에 즉시 표시)
   useEffect(() => {
@@ -201,7 +235,7 @@ const DOC_STATIC_FILE_MAP: Record<string, string> = {
 
   if (!isOpen || !docId) return null;
 
-  const fileUrl = `/chatbot/api/documents/${docId}/file`;
+  const resolvedDownloadUrl = targetPdfUrl;
   const pageChunks = chunks.filter(c => c.page_number === currentPage);
 
   const handleCopyText = (text: string) => {
@@ -221,7 +255,7 @@ const DOC_STATIC_FILE_MAP: Record<string, string> = {
             </div>
             <div className="truncate">
               <h3 className="text-sm sm:text-base font-black text-[#30415e] truncate">
-                {title.replace(/\[\s*테스트용\s*샘플(?:\s*데이터)?\s*\]\s*/g, '')}
+                {cleanTitle(title)}
               </h3>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-xs text-[#687fe0] font-bold bg-[#eaf2ff] px-2.5 py-0.5 rounded-full border border-[#d2e3fc]">
@@ -265,7 +299,7 @@ const DOC_STATIC_FILE_MAP: Record<string, string> = {
 
             {/* 새 창 열기 */}
             <a
-              href={fileUrl}
+              href={resolvedDownloadUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 transition-colors"
@@ -276,8 +310,8 @@ const DOC_STATIC_FILE_MAP: Record<string, string> = {
 
             {/* 다운로드 */}
             <a
-              href={fileUrl}
-              download={`${title}.pdf`}
+              href={resolvedDownloadUrl}
+              download={`${cleanTitle(title)}.pdf`}
               className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 transition-colors"
               title="PDF 파일 다운로드"
             >
@@ -375,13 +409,24 @@ const DOC_STATIC_FILE_MAP: Record<string, string> = {
               {renderError && (
                 <div className="py-16 text-center text-white space-y-3">
                   <p className="text-rose-400 font-semibold">{renderError}</p>
-                  <button
-                    type="button"
-                    onClick={() => setViewTab('text')}
-                    className="px-4 py-2 rounded-lg bg-brand-600 text-white text-xs font-semibold"
-                  >
-                    원문 텍스트 탭으로 전환하기
-                  </button>
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setViewTab('text')}
+                      className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold"
+                    >
+                      원문 텍스트 탭으로 전환
+                    </button>
+                    <a
+                      href={resolvedDownloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1.5"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      새 창에서 PDF 직접 열기
+                    </a>
+                  </div>
                 </div>
               )}
 

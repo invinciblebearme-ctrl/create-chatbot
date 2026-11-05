@@ -24,11 +24,14 @@ interface ChatMessageItemProps {
 }
 
 /**
- * [테스트용 샘플] 문구 필터링 헬퍼
+ * [테스트용 샘플] 및 관련 문구 완벽 제거 헬퍼
  */
 export function cleanSampleText(text: string): string {
   if (!text) return '';
-  return text.replace(/\[\s*테스트용\s*샘플(?:\s*데이터)?\s*\]\s*/g, '');
+  return text
+    .replace(/\[\s*테스트용\s*샘플(?:\s*데이터)?\s*\]\s*/gi, '')
+    .replace(/테스트용\s*샘플(?:\s*데이터)?/gi, '')
+    .trim();
 }
 
 /**
