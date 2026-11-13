@@ -239,20 +239,8 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
               )}
             </div>
 
-            {/* 유틸 버튼: AI 요약 다시 질문 / 전북AI 다시 질문 / 복사 / 일반 다시 질문 */}
+            {/* 유틸 버튼: 전북AI 다시 질문 / AI 요약 다시 질문 / 복사 / 일반 다시 질문 */}
             <div className="flex items-center gap-1.5 text-[#8b9ab7]">
-              {onRetrySummary && previousUserMessage && (
-                <button
-                  type="button"
-                  onClick={() => onRetrySummary(previousUserMessage)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-gradient-to-r from-[#f0ebff] to-[#f4f0ff] hover:from-[#e7deff] hover:to-[#eee6ff] text-[#6f4bd8] border border-[#e2d5ff] font-extrabold text-[11px] shadow-2xs transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  title="이 질문을 Workers AI 요약 모드로 다시 질문하기"
-                >
-                  <Sparkles className="w-3 h-3 text-[#7f5de0]" />
-                  <span>AI 요약</span>
-                </button>
-              )}
-
               {onRetryJeonbuk && previousUserMessage && (
                 <button
                   type="button"
@@ -262,6 +250,18 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                 >
                   <Bot className="w-3 h-3 text-[#0284c7]" />
                   <span>전북AI사용</span>
+                </button>
+              )}
+
+              {onRetrySummary && previousUserMessage && (
+                <button
+                  type="button"
+                  onClick={() => onRetrySummary(previousUserMessage)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-gradient-to-r from-[#f0ebff] to-[#f4f0ff] hover:from-[#e7deff] hover:to-[#eee6ff] text-[#6f4bd8] border border-[#e2d5ff] font-extrabold text-[11px] shadow-2xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  title="이 질문을 Workers AI 요약 모드로 다시 질문하기"
+                >
+                  <Sparkles className="w-3 h-3 text-[#7f5de0]" />
+                  <span>AI 요약</span>
                 </button>
               )}
 
@@ -349,15 +349,6 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                     <span>다시 질문</span>
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={() => onRetrySummary(previousUserMessage)}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#687fe0] via-[#7462e0] to-[#8854dc] hover:opacity-95 text-white text-xs font-black shadow-pill hover:shadow-btn hover:-translate-y-0.5 active:translate-y-0 transition-all"
-                  title="Workers AI 요약 모드로 전환하여 답변 다시 생성"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-                  <span>AI 요약</span>
-                </button>
                 {onRetryJeonbuk && (
                   <button
                     type="button"
@@ -369,6 +360,15 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                     <span>전북AI사용</span>
                   </button>
                 )}
+                <button
+                  type="button"
+                  onClick={() => onRetrySummary(previousUserMessage)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#687fe0] via-[#7462e0] to-[#8854dc] hover:opacity-95 text-white text-xs font-black shadow-pill hover:shadow-btn hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                  title="Workers AI 요약 모드로 전환하여 답변 다시 생성"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+                  <span>AI 요약</span>
+                </button>
               </div>
             </div>
           )}

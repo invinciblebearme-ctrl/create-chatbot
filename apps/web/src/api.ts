@@ -18,7 +18,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '/chatbot/api';
 
 export async function sendChatMessage(
   message: string,
-  mode: ChatMode = 'search',
+  mode: ChatMode = 'jeonbuk',
   filter?: SearchFilter,
   history?: Array<{ role: 'user' | 'assistant'; content: string }>
 ): Promise<ChatResponse> {

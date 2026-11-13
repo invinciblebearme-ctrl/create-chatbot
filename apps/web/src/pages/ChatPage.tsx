@@ -27,7 +27,7 @@ export const ChatPage: React.FC = () => {
 
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<ChatMode>('search');
+  const [mode, setMode] = useState<ChatMode>('jeonbuk');
   const [showFilters, setShowFilters] = useState(false);
   const [filter, setFilter] = useState<SearchFilter>({
     category: '전체',

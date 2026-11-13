@@ -114,20 +114,20 @@ export const Header: React.FC<HeaderProps> = ({
                   )}
                 </button>
 
-                {/* 하이브리드 답변 모드 스위치 */}
+                {/* 하이브리드 답변 모드 스위치 (전북AI사용 -> AI 요약 -> 자료 검색 순) */}
                 <div className="bg-[#f0f4fc] p-1 rounded-2xl flex items-center border border-[#e2e8f4]">
                   <button
                     type="button"
-                    onClick={() => onModeChange('search')}
+                    onClick={() => onModeChange('jeonbuk')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
-                      mode === 'search'
-                        ? 'bg-white text-[#34476a] shadow-sm'
+                      mode === 'jeonbuk'
+                        ? 'bg-gradient-to-r from-[#0ea5e9] to-[#2563eb] text-white shadow-pill'
                         : 'text-[#8b9ab7] hover:text-[#34476a]'
                     }`}
-                    title="등록된 공식 자료에서 직접 발췌 검색 (무료 100% 신뢰)"
+                    title="전북AI API Gateway 기반 새로운 챗봇 답변 (기본)"
                   >
-                    <Search className={`w-3.5 h-3.5 ${mode === 'search' ? 'text-[#687fe0]' : ''}`} />
-                    <span>자료 검색</span>
+                    <Bot className="w-3.5 h-3.5" />
+                    <span>전북AI사용</span>
                   </button>
                   <button
                     type="button"
@@ -144,16 +144,16 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => onModeChange('jeonbuk')}
+                    onClick={() => onModeChange('search')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
-                      mode === 'jeonbuk'
-                        ? 'bg-gradient-to-r from-[#0ea5e9] to-[#2563eb] text-white shadow-pill'
+                      mode === 'search'
+                        ? 'bg-white text-[#34476a] shadow-sm'
                         : 'text-[#8b9ab7] hover:text-[#34476a]'
                     }`}
-                    title="전북AI API Gateway 기반 새로운 스튜디오 챗봇 답변"
+                    title="등록된 공식 자료에서 직접 발췌 검색 (무료 100% 신뢰)"
                   >
-                    <Bot className="w-3.5 h-3.5" />
-                    <span>전북AI사용</span>
+                    <Search className={`w-3.5 h-3.5 ${mode === 'search' ? 'text-[#687fe0]' : ''}`} />
+                    <span>자료 검색</span>
                   </button>
                 </div>
               </>

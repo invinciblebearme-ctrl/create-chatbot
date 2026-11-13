@@ -143,7 +143,7 @@ export async function handleChat(request: Request, env: Env): Promise<Response> 
       return jsonResponse({ error: '질문 내용을 입력해 주세요.' }, 400);
     }
 
-    let requestedMode = body.mode || 'search';
+    let requestedMode = body.mode || 'jeonbuk';
     let isFallback = false;
     const todayStr = getKstDateString();
     const model = env.AI_MODEL_NAME || '@cf/meta/llama-3.1-8b-instruct';
