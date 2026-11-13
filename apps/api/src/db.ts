@@ -431,3 +431,107 @@ export async function getAdminDashboardStats(db: D1Database, todayStr: string): 
     recent_errors: []
   };
 }
+
+export interface StoredJeonbukAiSettings {
+  apiKey: string;
+  chatbotId: string;
+  model: string;
+  baseUrl: string;
+  useRagContext: boolean;
+}
+
+async function ensureAppSettingsTable(db: D1Database): Promise<void> {
+  try {
+    await db
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS app_settings (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL,
+          updated_at TEXT DEFAULT (datetime('now', '+9 hours'))
+        )`
+      )
+      .run();
+  } catch (e) {
+    console.warn('Failed to ensure app_settings table:', e);
+  }
+}
+
+export async function getJeonbukAiSettings(
+  db: D1Database,
+  envDefaults?: {
+    apiKey?: string;
+    chatbotId?: string;
+    model?: string;
+    baseUrl?: string;
+  }
+): Promise<StoredJeonbukAiSettings> {
+  const settings: StoredJeonbukAiSettings = {
+    apiKey: envDefaults?.apiKey || '',
+    chatbotId: envDefaults?.chatbotId || '',
+    model: envDefaults?.model || 'claude-sonnet-5',
+    baseUrl: envDefaults?.baseUrl || 'https://api.baze.co/v1/gateway',
+    useRagContext: true
+  };
+
+  try {
+    await ensureAppSettingsTable(db);
+    const res = await db
+      .prepare("SELECT key, value FROM app_settings WHERE key LIKE 'jeonbuk_ai_%'")
+      .all<{ key: string; value: string }>();
+
+    for (const row of res.results || []) {
+      if (row.key === 'jeonbuk_ai_api_key' && row.value) settings.apiKey = row.value;
+      if (row.key === 'jeonbuk_ai_chatbot_id') settings.chatbotId = row.value;
+      if (row.key === 'jeonbuk_ai_model' && row.value) settings.model = row.value;
+      if (row.key === 'jeonbuk_ai_base_url' && row.value) settings.baseUrl = row.value;
+      if (row.key === 'jeonbuk_ai_use_rag_context') settings.useRagContext = row.value !== 'false';
+    }
+  } catch (e) {
+    console.warn('getJeonbukAiSettings fallback to env defaults:', e);
+  }
+
+  return settings;
+}
+
+export async function saveJeonbukAiSettings(
+  db: D1Database,
+  payload: {
+    api_key?: string;
+    chatbot_id?: string;
+    model?: string;
+    base_url?: string;
+    use_rag_context?: boolean;
+  }
+): Promise<void> {
+  await ensureAppSettingsTable(db);
+  const entries: Array<[string, string]> = [];
+
+  if (payload.api_key !== undefined && payload.api_key.trim() !== '') {
+    entries.push(['jeonbuk_ai_api_key', payload.api_key.trim()]);
+  }
+  if (payload.chatbot_id !== undefined) {
+    entries.push(['jeonbuk_ai_chatbot_id', payload.chatbot_id.trim()]);
+  }
+  if (payload.model !== undefined && payload.model.trim() !== '') {
+    entries.push(['jeonbuk_ai_model', payload.model.trim()]);
+  }
+  if (payload.base_url !== undefined && payload.base_url.trim() !== '') {
+    entries.push(['jeonbuk_ai_base_url', payload.base_url.trim().replace(/\/+$/, '')]);
+  }
+  if (payload.use_rag_context !== undefined) {
+    entries.push(['jeonbuk_ai_use_rag_context', payload.use_rag_context ? 'true' : 'false']);
+  }
+
+  if (entries.length === 0) return;
+
+  const stmts = entries.map(([k, v]) =>
+    db
+      .prepare(
+        `INSERT INTO app_settings (key, value, updated_at)
+         VALUES (?, ?, datetime('now', '+9 hours'))
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+      )
+      .bind(k, v)
+  );
+  await db.batch(stmts);
+}

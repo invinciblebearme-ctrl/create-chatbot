@@ -21,7 +21,9 @@ import {
   handleAdminDeleteDocument,
   handleAdminReindexDocument,
   handleAdminUsageStats,
-  handleAdminTestSearch
+  handleAdminTestSearch,
+  handleAdminGetJeonbukConfig,
+  handleAdminUpdateJeonbukConfig
 } from './routes/admin';
 
 /**
@@ -160,6 +162,10 @@ export default {
         response = await handleAdminUsageStats(request, env);
       } else if (apiPath === '/api/chatbot/admin/test-search' && method === 'POST') {
         response = await handleAdminTestSearch(request, env);
+      } else if (apiPath === '/api/chatbot/admin/jeonbuk-config' && method === 'GET') {
+        response = await handleAdminGetJeonbukConfig(request, env);
+      } else if (apiPath === '/api/chatbot/admin/jeonbuk-config' && method === 'PUT') {
+        response = await handleAdminUpdateJeonbukConfig(request, env);
       }
 
       // 일치하는 라우트 없음

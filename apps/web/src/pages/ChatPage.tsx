@@ -93,7 +93,12 @@ export const ChatPage: React.FC = () => {
           ? filter
           : undefined;
 
-      const response = await sendChatMessage(query, targetMode, activeFilter);
+      const historyPayload = messages
+        .filter(m => m.role === 'user' || m.role === 'assistant')
+        .slice(-4)
+        .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+
+      const response = await sendChatMessage(query, targetMode, activeFilter, historyPayload);
 
       const botMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
@@ -116,6 +121,10 @@ export const ChatPage: React.FC = () => {
 
   const handleRetrySummary = (query: string) => {
     handleSendMessage(query, 'ai');
+  };
+
+  const handleRetryJeonbuk = (query: string) => {
+    handleSendMessage(query, 'jeonbuk');
   };
 
   const handleClearChat = () => {
@@ -196,6 +205,7 @@ export const ChatPage: React.FC = () => {
                   previousUserMessage={prevUserMsg}
                   onRetry={handleSendMessage}
                   onRetrySummary={handleRetrySummary}
+                  onRetryJeonbuk={handleRetryJeonbuk}
                   onOpenPdf={(docId, pageNumber, title) =>
                     setViewerModal({
                       isOpen: true,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Sparkles, Search, SlidersHorizontal, Shield, ExternalLink } from 'lucide-react';
+import { Sparkles, Search, SlidersHorizontal, Shield, Bot } from 'lucide-react';
 import { ChatMode } from '@create-chatbot/shared';
 
 interface HeaderProps {
@@ -141,6 +141,19 @@ export const Header: React.FC<HeaderProps> = ({
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                     <span>AI 요약</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onModeChange('jeonbuk')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
+                      mode === 'jeonbuk'
+                        ? 'bg-gradient-to-r from-[#0ea5e9] to-[#2563eb] text-white shadow-pill'
+                        : 'text-[#8b9ab7] hover:text-[#34476a]'
+                    }`}
+                    title="전북AI API Gateway 기반 새로운 스튜디오 챗봇 답변"
+                  >
+                    <Bot className="w-3.5 h-3.5" />
+                    <span>전북AI사용</span>
                   </button>
                 </div>
               </>

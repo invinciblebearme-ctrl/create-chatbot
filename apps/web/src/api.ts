@@ -3,25 +3,30 @@
  */
 
 import {
+  ChatMode,
   ChatRequest,
   ChatResponse,
   SearchFilter,
   SearchResult,
   Document,
-  AdminStats
+  AdminStats,
+  JeonbukAiConfig,
+  JeonbukAiConfigUpdatePayload
 } from '@create-chatbot/shared';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/chatbot/api';
 
 export async function sendChatMessage(
   message: string,
-  mode: 'search' | 'ai' = 'search',
-  filter?: SearchFilter
+  mode: ChatMode = 'search',
+  filter?: SearchFilter,
+  history?: Array<{ role: 'user' | 'assistant'; content: string }>
 ): Promise<ChatResponse> {
   const payload: ChatRequest = {
     message,
     mode,
-    filter
+    filter,
+    history
   };
 
   const res = await fetch(`${API_BASE}/chat`, {
@@ -192,6 +197,35 @@ export async function adminTestSearch(query: string): Promise<any> {
 
   if (!res.ok) {
     throw new Error('테스트 검색 실패');
+  }
+
+  return res.json();
+}
+
+export async function adminFetchJeonbukConfig(): Promise<JeonbukAiConfig> {
+  const res = await fetch(`${API_BASE}/admin/jeonbuk-config`, {
+    headers: getAdminHeaders()
+  });
+
+  if (!res.ok) {
+    throw new Error('전북AI 설정 조회 실패');
+  }
+
+  return res.json();
+}
+
+export async function adminUpdateJeonbukConfig(
+  payload: JeonbukAiConfigUpdatePayload
+): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${API_BASE}/admin/jeonbuk-config`, {
+    method: 'PUT',
+    headers: getAdminHeaders(),
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || '전북AI 설정 저장 실패');
   }
 
   return res.json();

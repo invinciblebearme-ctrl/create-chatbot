@@ -7,6 +7,7 @@ import {
   GRADE_OPTIONS,
   SUBJECT_OPTIONS,
   AdminStats,
+  JeonbukAiConfig,
   splitTextIntoChunks
 } from '@create-chatbot/shared';
 import {
@@ -15,7 +16,9 @@ import {
   adminDeleteDocument,
   adminReindexDocument,
   adminFetchStats,
-  adminTestSearch
+  adminTestSearch,
+  adminFetchJeonbukConfig,
+  adminUpdateJeonbukConfig
 } from '../api';
 import {
   UploadCloud,
@@ -37,7 +40,8 @@ import {
   Sparkles,
   Clock,
   BarChart3,
-  AlertCircle
+  AlertCircle,
+  Bot
 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PdfViewerModal } from '../components/PdfViewerModal';
@@ -52,11 +56,20 @@ export const AdminPage: React.FC = () => {
   const [pinError, setPinError] = useState('');
   const isUnlocked = adminPin === '7703';
 
-  const [activeTab, setActiveTab] = useState<'upload' | 'documents' | 'test'>('upload');
+  const [activeTab, setActiveTab] = useState<'upload' | 'documents' | 'test' | 'jeonbuk'>('upload');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // 전북AI 설정 상태
+  const [jeonbukConfig, setJeonbukConfig] = useState<JeonbukAiConfig | null>(null);
+  const [jbApiKey, setJbApiKey] = useState('');
+  const [jbChatbotId, setJbChatbotId] = useState('');
+  const [jbModel, setJbModel] = useState('claude-sonnet-5');
+  const [jbBaseUrl, setJbBaseUrl] = useState('https://api.baze.co/v1/gateway');
+  const [jbUseRagContext, setJbUseRagContext] = useState(true);
+  const [jbSaving, setJbSaving] = useState(false);
 
   // 업로드 폼 상태
   const [file, setFile] = useState<File | null>(null);
@@ -96,14 +109,44 @@ export const AdminPage: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [fetchedStats, fetchedDocs] = await Promise.all([
+      const [fetchedStats, fetchedDocs, fetchedJbConfig] = await Promise.all([
         adminFetchStats().catch(() => null),
-        adminFetchDocuments().catch(() => [])
+        adminFetchDocuments().catch(() => []),
+        adminFetchJeonbukConfig().catch(() => null)
       ]);
       if (fetchedStats) setStats(fetchedStats);
       setDocuments(fetchedDocs);
+      if (fetchedJbConfig) {
+        setJeonbukConfig(fetchedJbConfig);
+        setJbChatbotId(fetchedJbConfig.chatbot_id || '');
+        setJbModel(fetchedJbConfig.model || 'claude-sonnet-5');
+        setJbBaseUrl(fetchedJbConfig.base_url || 'https://api.baze.co/v1/gateway');
+        setJbUseRagContext(fetchedJbConfig.use_rag_context !== false);
+      }
     } catch (err: any) {
       console.warn('Failed to load admin initial data:', err);
+    }
+  };
+
+  const handleSaveJeonbukConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setJbSaving(true);
+    setNotice(null);
+    try {
+      const res = await adminUpdateJeonbukConfig({
+        api_key: jbApiKey.trim() || undefined,
+        chatbot_id: jbChatbotId.trim(),
+        model: jbModel.trim() || 'claude-sonnet-5',
+        base_url: jbBaseUrl.trim() || 'https://api.baze.co/v1/gateway',
+        use_rag_context: jbUseRagContext
+      });
+      setJbApiKey('');
+      setNotice({ type: 'success', message: res.message || '전북AI 설정이 저장되었습니다.' });
+      await loadData();
+    } catch (err: any) {
+      setNotice({ type: 'error', message: err.message || '전북AI 설정 저장 실패' });
+    } finally {
+      setJbSaving(false);
     }
   };
 
@@ -657,6 +700,18 @@ export const AdminPage: React.FC = () => {
             <Sliders className="w-4 h-4" />
             검색 품질 점검 콘솔
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('jeonbuk')}
+            className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center gap-1.5 ${
+              activeTab === 'jeonbuk'
+                ? 'bg-gradient-to-r from-[#0ea5e9] to-[#2563eb] text-white shadow-[0_4px_12px_rgba(14,165,233,0.28)]'
+                : 'bg-white text-[#0369a1] hover:text-[#075985] border border-[#bae6fd]'
+            }`}
+          >
+            <Bot className="w-4 h-4" />
+            전북AI 챗봇 연결 설정
+          </button>
         </div>
       </div>
 
@@ -1041,6 +1096,140 @@ export const AdminPage: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* 탭 4: 전북AI API Gateway 연동 설정 */}
+        {activeTab === 'jeonbuk' && (
+          <div className="bg-white rounded-[24px] border border-[#e8edf6] shadow-[0_5px_22px_rgba(164,176,202,0.12)] p-5 sm:p-7 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#e8edf6]">
+              <div>
+                <h3 className="font-black text-base text-[#30415e] flex items-center gap-2">
+                  <Bot className="w-5 h-5 text-[#0284c7]" />
+                  <span>전북AI API Gateway 연동 설정 (CREATE 모형 + 공식 자료 RAG 결합)</span>
+                </h3>
+                <p className="text-xs text-[#697b98] mt-1">
+                  발급받은 <strong>전북AI API 키</strong>만 입력하면 상단 헤더의 <strong>전북AI사용</strong> 버튼이 <code>/v1/gateway/chat/completions/</code> 엔드포인트 및 연구학교 공식 자료와 즉시 연결됩니다.
+                </p>
+              </div>
+              <div>
+                {jeonbukConfig?.api_key_configured ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e6f8ef] text-[#1c7d54] text-xs font-extrabold border border-[#c6ebd6]">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    API 키 등록됨 ({jeonbukConfig.api_key_masked})
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fff0e3] text-[#cf7a38] text-xs font-extrabold border border-[#ffd8b8]">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    API 키 미설정
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveJeonbukConfig} className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-[#34476a] mb-1.5">
+                    전북AI API Key * (`Authorization: Bearer YOUR_API_KEY`)
+                  </label>
+                  <input
+                    type="password"
+                    value={jbApiKey}
+                    onChange={e => setJbApiKey(e.target.value)}
+                    placeholder={
+                      jeonbukConfig?.api_key_configured
+                        ? `현재 등록된 키 유지 (${jeonbukConfig.api_key_masked}) — 변경 시에만 새 키 입력`
+                        : '전북AI에서 발급받은 API 키를 붙여넣으세요'
+                    }
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-[#e8edf6] bg-white outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-[#0284c7] text-[#30415e]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#34476a] mb-1.5">
+                    사용할 AI 모델명 (`model`)
+                  </label>
+                  <input
+                    type="text"
+                    value={jbModel}
+                    onChange={e => setJbModel(e.target.value)}
+                    placeholder="예: claude-sonnet-5"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-[#e8edf6] bg-white outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-[#0284c7] text-[#30415e]"
+                  />
+                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    {['claude-sonnet-5', 'gpt-4o', 'gemini-2.5-pro', 'claude-3-7-sonnet'].map(preset => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setJbModel(preset)}
+                        className={`px-2 py-0.5 rounded-md text-[11px] font-bold border transition-all ${
+                          jbModel === preset
+                            ? 'bg-[#e0f2fe] text-[#0369a1] border-[#7dd3fc]'
+                            : 'bg-[#f8faff] text-[#697b98] border-[#e8edf6] hover:text-[#30415e]'
+                        }`}
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#34476a] mb-1.5">
+                    (선택) 스튜디오 챗봇 ID (`chatbot_id`)
+                  </label>
+                  <input
+                    type="text"
+                    value={jbChatbotId}
+                    onChange={e => setJbChatbotId(e.target.value)}
+                    placeholder="비워두면 위 모델 + CREATE 공식 프롬프트로 직접 작동"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-[#e8edf6] bg-white outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-[#0284c7] text-[#30415e]"
+                  />
+                  <p className="text-[11px] text-[#8b9ab7] mt-1">
+                    비워두는 것을 권장합니다. (별도 스튜디오 챗봇 사용 시에만 입력)
+                  </p>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-[#34476a] mb-1.5">
+                    Gateway Base URL
+                  </label>
+                  <input
+                    type="text"
+                    value={jbBaseUrl}
+                    onChange={e => setJbBaseUrl(e.target.value)}
+                    placeholder="https://api.baze.co/v1/gateway"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-[#e8edf6] bg-white outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-[#0284c7] text-[#30415e]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-[#f0f9ff] border border-[#bae6fd]">
+                <input
+                  type="checkbox"
+                  id="jbUseRagCheck"
+                  checked={jbUseRagContext}
+                  onChange={e => setJbUseRagContext(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#0284c7] focus:ring-[#0284c7] border-[#7dd3fc]"
+                />
+                <label htmlFor="jbUseRagCheck" className="text-xs font-bold text-[#0c4a6e] cursor-pointer">
+                  D1 공식 연구학교 교육자료 검색 결과를 참고자료 컨텍스트로 함께 전달 (출처 PDF 표시 유지)
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={jbSaving}
+                className={`w-full py-3.5 rounded-xl font-bold text-sm text-white shadow-[0_7px_16px_rgba(14,165,233,0.27)] transition-all ${
+                  jbSaving
+                    ? 'bg-slate-400 cursor-not-allowed shadow-none'
+                    : 'bg-gradient-to-r from-[#0ea5e9] to-[#2563eb] hover:opacity-95 active:scale-[0.99]'
+                }`}
+              >
+                {jbSaving ? '전북AI 설정 저장 중...' : '전북AI 연결 설정 저장하기'}
+              </button>
+            </form>
           </div>
         )}
       </div>

@@ -4,7 +4,7 @@
   "description": "Cloudflare Workers API for CREATE AI 수업 도우미",
   "main": "src/index.ts",
   "scripts": {
-    "migrate:local": "wrangler d1 execute future-chatbot-d1 --local --file=../../migrations/0001_initial.sql && wrangler d1 execute future-chatbot-d1 --local --file=../../migrations/0002_seed_data.sql",
+    "migrate:local": "wrangler d1 execute create-chatbot-d1 --local --file=../../migrations/0001_initial.sql && wrangler d1 execute create-chatbot-d1 --local --file=../../migrations/0002_seed_data.sql",
     "dev": "npm run migrate:local && wrangler dev",
     "build": "tsc --noEmit",
     "deploy": "wrangler deploy",

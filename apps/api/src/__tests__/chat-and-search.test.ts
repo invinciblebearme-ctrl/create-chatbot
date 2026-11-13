@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { generateSearchFallbackAnswer, generateAiAnswer } from '../ai';
+import { describe, it, expect, vi } from 'vitest';
+import { generateSearchFallbackAnswer, generateAiAnswer, generateJeonbukAiAnswer } from '../ai';
 import { SearchResult } from '@create-chatbot/shared';
 import { Env } from '../env';
 
@@ -43,5 +43,113 @@ describe('Search and AI Answering Tests', () => {
     expect(result.answer).toContain('CREATE 6단계 교수·학습 모형 요약');
     expect(result.isFallback).toBe(true);
     expect(result.modelUsed).toBe('fallback-search');
+  });
+
+  it('전북AI 미설정 시 설정 안내와 공식 검색 폴백을 안전하게 반환', async () => {
+    const mockEnv: Env = {
+      DB: {} as any,
+      DOCS_BUCKET: {} as any,
+      AI: undefined as any
+    };
+
+    const result = await generateJeonbukAiAnswer(
+      mockEnv,
+      'CREATE 모형이란?',
+      mockSearchResults,
+      {
+        apiKey: '',
+        chatbotId: '',
+        model: 'claude-sonnet-5',
+        baseUrl: 'https://api.baze.co/v1/gateway',
+        useRagContext: true
+      }
+    );
+
+    expect(result.isFallback).toBe(true);
+    expect(result.modelUsed).toBe('jeonbuk-unconfigured');
+    expect(result.answer).toContain('전북AI 연동 설정 안내');
+  });
+
+  it('전북AI 스튜디오 챗봇 엔드포인트(/v1/gateway/chatbots/{chatbot_id}/chat/completions/) 정상 호출 확인', async () => {
+    const mockEnv: Env = {
+      DB: {} as any,
+      DOCS_BUCKET: {} as any,
+      AI: undefined as any
+    };
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: '전북AI 스튜디오 챗봇이 생성한 CREATE 모형 답변입니다.' } }]
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+
+    const result = await generateJeonbukAiAnswer(
+      mockEnv,
+      'CREATE 모형 6단계 설명해줘',
+      mockSearchResults,
+      {
+        apiKey: 'test-baze-key',
+        chatbotId: 'studio-bot-123',
+        model: 'claude-sonnet-5',
+        baseUrl: 'https://api.baze.co/v1/gateway',
+        useRagContext: true
+      }
+    );
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(fetchSpy.mock.calls[0][0]).toBe(
+      'https://api.baze.co/v1/gateway/chatbots/studio-bot-123/chat/completions/'
+    );
+    expect(result.isFallback).toBe(false);
+    expect(result.modelUsed).toBe('jeonbuk-chatbot:studio-bot-123');
+    expect(result.answer).toContain('전북AI 스튜디오 챗봇이 생성한 CREATE 모형 답변입니다.');
+
+    fetchSpy.mockRestore();
+  });
+
+  it('2번 방식(API 키 + 기본 게이트웨이 /v1/gateway/chat/completions/ + CREATE 시스템 프롬프트 & D1 자료 결합) 정상 호출 확인', async () => {
+    const mockEnv: Env = {
+      DB: {} as any,
+      DOCS_BUCKET: {} as any,
+      AI: undefined as any
+    };
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: '전북AI 게이트웨이(claude-sonnet-5)가 공식 자료를 바탕으로 생성한 답변입니다.' } }]
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+
+    const result = await generateJeonbukAiAnswer(
+      mockEnv,
+      '5학년 과학 수업 설계 아이디어 알려줘',
+      mockSearchResults,
+      {
+        apiKey: 'test-baze-key',
+        chatbotId: '',
+        model: 'claude-sonnet-5',
+        baseUrl: 'https://api.baze.co/v1/gateway',
+        useRagContext: true
+      }
+    );
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(fetchSpy.mock.calls[0][0]).toBe('https://api.baze.co/v1/gateway/chat/completions/');
+    const sentBody = JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string);
+    expect(sentBody.model).toBe('claude-sonnet-5');
+    expect(sentBody.messages[0].role).toBe('system');
+    expect(sentBody.messages[0].content).toContain('CREATE 교수·학습 모형');
+    expect(sentBody.messages[1].content).toContain('CREATE 수업설계 모형 길잡이');
+    expect(result.isFallback).toBe(false);
+    expect(result.modelUsed).toBe('jeonbuk:claude-sonnet-5');
+    expect(result.answer).toContain('전북AI 게이트웨이(claude-sonnet-5)');
+
+    fetchSpy.mockRestore();
   });
 });

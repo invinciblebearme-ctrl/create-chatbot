@@ -32,3 +32,7 @@ Thumbs.db
 # Vite temporary files
 *.timestamp-*.mjs
 vite.config.ts.timestamp-*
+
+# Local backups
+backups/
+developer_docs.md

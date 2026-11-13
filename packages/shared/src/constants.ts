@@ -74,6 +74,15 @@ export const CREATE_STAGES: CreateStageInfo[] = [
 export const DEFAULT_AI_MODEL = '@cf/meta/llama-3.1-8b-instruct';
 export const FALLBACK_AI_MODEL = '@cf/qwen/qwen1.5-7b-chat-awq';
 
+export const JEONBUK_AI_DEFAULTS = {
+  // 전북AI API Gateway 기본 Base URL (OpenAI 호환 / 스튜디오 챗봇 공통)
+  BASE_URL: 'https://api.baze.co/v1/gateway',
+  // 스튜디오 챗봇 ID 미지정 시 사용할 기본 모델 (문서 빠른 시작 예시 기준)
+  DEFAULT_MODEL: 'claude-sonnet-5',
+  // 챗봇 채팅 라우트 호출 제한 (분당 30건)
+  CHATBOT_RATE_LIMIT_PER_MIN: 30
+};
+
 export const AI_QUOTA_POLICY = {
   // Cloudflare Workers AI 무료 티어 보호를 위한 일일 보수적 요청 한도
   DAILY_MAX_REQUESTS: 250,

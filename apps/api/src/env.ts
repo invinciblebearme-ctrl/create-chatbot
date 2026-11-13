@@ -21,4 +21,10 @@ export interface Env {
   CF_ACCESS_TEAM_NAME?: string;
   CF_ACCESS_AUD?: string;
   AI_MODEL_NAME?: string;
+
+  // 전북AI API Gateway 연동 환경 변수
+  JEONBUK_AI_API_KEY?: string;
+  JEONBUK_AI_CHATBOT_ID?: string;
+  JEONBUK_AI_MODEL?: string;
+  JEONBUK_AI_BASE_URL?: string;
 }

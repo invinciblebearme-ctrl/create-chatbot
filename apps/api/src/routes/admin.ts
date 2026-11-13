@@ -5,6 +5,8 @@
 
 import {
   DocumentCategory,
+  JeonbukAiConfig,
+  JeonbukAiConfigUpdatePayload,
   extractSearchKeywords,
   calculateRelevanceScore
 } from '@create-chatbot/shared';
@@ -16,7 +18,9 @@ import {
   createDocumentWithChunks,
   updateDocument,
   deleteDocument,
-  getAdminDashboardStats
+  getAdminDashboardStats,
+  getJeonbukAiSettings,
+  saveJeonbukAiSettings
 } from '../db';
 import { validatePdfSignature, sanitizeUserInput } from '../security';
 import { jsonResponse } from './public';
@@ -349,5 +353,66 @@ export async function handleAdminTestSearch(request: Request, env: Env): Promise
   } catch (err: any) {
     console.error('handleAdminTestSearch error:', err);
     return jsonResponse({ error: '테스트 검색 실패', details: err.message }, 500);
+  }
+}
+
+/**
+ * GET /api/chatbot/admin/jeonbuk-config
+ */
+export async function handleAdminGetJeonbukConfig(request: Request, env: Env): Promise<Response> {
+  const auth = await verifyCloudflareAccess(request, env);
+  if (!auth) {
+    return jsonResponse({ error: '관리자 인증이 필요합니다.' }, 401);
+  }
+
+  try {
+    const settings = await getJeonbukAiSettings(env.DB, {
+      apiKey: env.JEONBUK_AI_API_KEY,
+      chatbotId: env.JEONBUK_AI_CHATBOT_ID,
+      model: env.JEONBUK_AI_MODEL,
+      baseUrl: env.JEONBUK_AI_BASE_URL
+    });
+
+    const maskedKey = settings.apiKey
+      ? settings.apiKey.length > 8
+        ? `${settings.apiKey.slice(0, 4)}****${settings.apiKey.slice(-4)}`
+        : '****'
+      : '';
+
+    const config: JeonbukAiConfig = {
+      api_key_configured: !!settings.apiKey,
+      api_key_masked: maskedKey,
+      chatbot_id: settings.chatbotId,
+      model: settings.model,
+      base_url: settings.baseUrl,
+      use_rag_context: settings.useRagContext
+    };
+
+    return jsonResponse(config);
+  } catch (err: any) {
+    console.error('handleAdminGetJeonbukConfig error:', err);
+    return jsonResponse({ error: '전북AI 설정 조회 실패', details: err.message }, 500);
+  }
+}
+
+/**
+ * PUT /api/chatbot/admin/jeonbuk-config
+ */
+export async function handleAdminUpdateJeonbukConfig(request: Request, env: Env): Promise<Response> {
+  const auth = await verifyCloudflareAccess(request, env);
+  if (!auth) {
+    return jsonResponse({ error: '관리자 인증이 필요합니다.' }, 401);
+  }
+
+  try {
+    const body = (await request.json()) as JeonbukAiConfigUpdatePayload;
+    await saveJeonbukAiSettings(env.DB, body);
+    return jsonResponse({
+      success: true,
+      message: '전북AI API Gateway 및 챗봇 설정이 저장되었습니다.'
+    });
+  } catch (err: any) {
+    console.error('handleAdminUpdateJeonbukConfig error:', err);
+    return jsonResponse({ error: '전북AI 설정 저장 실패', details: err.message }, 500);
   }
 }

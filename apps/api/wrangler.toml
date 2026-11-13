@@ -26,6 +26,9 @@ ALLOWED_ORIGIN = "https://create.allforedu.kr"
 CF_ACCESS_TEAM_NAME = "futureschool"
 CF_ACCESS_AUD = ""
 AI_MODEL_NAME = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+JEONBUK_AI_BASE_URL = "https://api.baze.co/v1/gateway"
+JEONBUK_AI_MODEL = "claude-sonnet-5"
+JEONBUK_AI_CHATBOT_ID = ""
 
 # 로컬 개발 환경 오버라이드
 [env.development.vars]

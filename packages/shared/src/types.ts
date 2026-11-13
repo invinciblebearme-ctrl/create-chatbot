@@ -130,7 +130,24 @@ export interface SearchResult {
   matched_keywords: string[];
 }
 
-export type ChatMode = 'search' | 'ai';
+export type ChatMode = 'search' | 'ai' | 'jeonbuk';
+
+export interface JeonbukAiConfig {
+  api_key_configured: boolean;
+  api_key_masked?: string;
+  chatbot_id: string;
+  model: string;
+  base_url: string;
+  use_rag_context: boolean;
+}
+
+export interface JeonbukAiConfigUpdatePayload {
+  api_key?: string;
+  chatbot_id?: string;
+  model?: string;
+  base_url?: string;
+  use_rag_context?: boolean;
+}
 
 export interface ChatMessage {
   id: string;

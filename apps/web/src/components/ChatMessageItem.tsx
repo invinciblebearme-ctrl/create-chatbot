@@ -20,6 +20,7 @@ interface ChatMessageItemProps {
   message: ChatMessage;
   onRetry?: (query: string) => void;
   onRetrySummary?: (query: string) => void;
+  onRetryJeonbuk?: (query: string) => void;
   onOpenPdf: (docId: string, pageNumber: number, title: string) => void;
   previousUserMessage?: string;
 }
@@ -173,6 +174,7 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
   message,
   onRetry,
   onRetrySummary,
+  onRetryJeonbuk,
   onOpenPdf,
   previousUserMessage
 }) => {
@@ -212,7 +214,12 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
           {/* 상단 뱃지: 모드 및 폴백 상태 */}
           <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-[#edf0f6] text-xs">
             <div className="flex items-center gap-1.5 font-extrabold">
-              {message.mode === 'ai' && !message.is_fallback ? (
+              {message.mode === 'jeonbuk' && !message.is_fallback ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#e0f2fe] text-[#0369a1]">
+                  <Bot className="w-3 h-3 text-[#0284c7]" />
+                  전북AI 챗봇
+                </span>
+              ) : message.mode === 'ai' && !message.is_fallback ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#f1ecff] text-[#7a59d9]">
                   <Sparkles className="w-3 h-3" />
                   Workers AI 요약
@@ -227,12 +234,12 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
               {message.is_fallback && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#fff0e3] text-[#cf7a38]">
                   <AlertTriangle className="w-3 h-3 text-[#cf7a38]" />
-                  무료한도 검색모드 전환
+                  검색모드 폴백 전환
                 </span>
               )}
             </div>
 
-            {/* 유틸 버튼: AI 요약 다시 질문 / 복사 / 일반 다시 질문 */}
+            {/* 유틸 버튼: AI 요약 다시 질문 / 전북AI 다시 질문 / 복사 / 일반 다시 질문 */}
             <div className="flex items-center gap-1.5 text-[#8b9ab7]">
               {onRetrySummary && previousUserMessage && (
                 <button
@@ -242,7 +249,19 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                   title="이 질문을 Workers AI 요약 모드로 다시 질문하기"
                 >
                   <Sparkles className="w-3 h-3 text-[#7f5de0]" />
-                  <span>AI 요약으로 다시 질문</span>
+                  <span>AI 요약</span>
+                </button>
+              )}
+
+              {onRetryJeonbuk && previousUserMessage && (
+                <button
+                  type="button"
+                  onClick={() => onRetryJeonbuk(previousUserMessage)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-gradient-to-r from-[#e0f2fe] to-[#eff6ff] hover:from-[#bae6fd] hover:to-[#dbeafe] text-[#0369a1] border border-[#bae6fd] font-extrabold text-[11px] shadow-2xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  title="이 질문을 전북AI 챗봇 모드로 다시 질문하기"
+                >
+                  <Bot className="w-3 h-3 text-[#0284c7]" />
+                  <span>전북AI사용</span>
                 </button>
               )}
 
@@ -337,8 +356,19 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                   title="Workers AI 요약 모드로 전환하여 답변 다시 생성"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-                  <span>AI 요약으로 다시 질문</span>
+                  <span>AI 요약</span>
                 </button>
+                {onRetryJeonbuk && (
+                  <button
+                    type="button"
+                    onClick={() => onRetryJeonbuk(previousUserMessage)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#0ea5e9] to-[#2563eb] hover:opacity-95 text-white text-xs font-black shadow-pill hover:shadow-btn hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                    title="전북AI 챗봇 모드로 전환하여 답변 다시 생성"
+                  >
+                    <Bot className="w-3.5 h-3.5 text-sky-100" />
+                    <span>전북AI사용</span>
+                  </button>
+                )}
               </div>
             </div>
           )}

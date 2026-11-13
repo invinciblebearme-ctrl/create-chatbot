@@ -16,9 +16,10 @@ import {
   listDocuments,
   getDocumentById,
   getTodayAiUsage,
-  incrementAiUsage
+  incrementAiUsage,
+  getJeonbukAiSettings
 } from '../db';
-import { generateAiAnswer, generateSearchFallbackAnswer } from '../ai';
+import { generateAiAnswer, generateJeonbukAiAnswer, generateSearchFallbackAnswer } from '../ai';
 import { sanitizeUserInput, checkRateLimit } from '../security';
 import { generateSamplePdf } from '../sample-pdf';
 import { runDatabaseSetup } from '../db-setup';
@@ -224,6 +225,34 @@ export async function handleChat(request: Request, env: Env): Promise<Response> 
           } catch (e) {
             console.warn('Failed to record ai usage:', e);
           }
+        }
+      }
+    } else if (requestedMode === 'jeonbuk') {
+      // 전북AI API Gateway (스튜디오 챗봇 / 게이트웨이) 모드
+      const jeonbukSettings = await getJeonbukAiSettings(env.DB, {
+        apiKey: env.JEONBUK_AI_API_KEY,
+        chatbotId: env.JEONBUK_AI_CHATBOT_ID,
+        model: env.JEONBUK_AI_MODEL,
+        baseUrl: env.JEONBUK_AI_BASE_URL
+      });
+
+      const jeonbukResult = await generateJeonbukAiAnswer(
+        env,
+        userMessage,
+        searchResults,
+        jeonbukSettings,
+        body.history
+      );
+      answerText = jeonbukResult.answer;
+      isFallback = jeonbukResult.isFallback;
+      if (jeonbukResult.isFallback) {
+        modeUsed = 'search';
+      } else {
+        modeUsed = 'jeonbuk';
+        try {
+          await incrementAiUsage(env.DB, todayStr, jeonbukResult.modelUsed || 'jeonbuk-ai');
+        } catch (e) {
+          console.warn('Failed to record jeonbuk ai usage:', e);
         }
       }
     } else {
